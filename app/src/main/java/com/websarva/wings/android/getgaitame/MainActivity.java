@@ -1,6 +1,8 @@
 package com.websarva.wings.android.getgaitame;
 
 import android.os.Handler;
+import android.support.v4.view.WindowCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
@@ -14,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,37 +33,56 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
-    List<Map<String, String>> listData = new ArrayList<Map<String, String>>();
+    ArrayList<Map<String, String>> listData = new ArrayList<Map<String, String>>();
+    ArrayList<Map<String, String>> listDataClone;
     ListView listView;
     SimpleAdapter adapter;
+    Timer mTimer = new Timer();
+    TimerTask mTimerTask = new MainTimerTask();
+    Handler mHandler = new Handler();
+    boolean menu_flag = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("memory","Puzzle onStart");
-        listView=(ListView) findViewById(R.id.lvCityList);
+        supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
+        listView=(ListView) findViewById(R.id.lvCityList);
         ListView listView=(ListView) findViewById(R.id.lvCityList);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHideOnContentScrollEnabled(true);
+            actionBar.setShowHideAnimationEnabled(true);
+        }
         try{
-            WeatherInfoReceiver receiver = new WeatherInfoReceiver();
-            receiver.execute("");
+            mTimer.schedule(mTimerTask, 0, 999);
 
         }catch(Exception e){
-
+            System.out.print(e);
         }finally {
 
         }
-
-
     }
-
     @Override
-    public void onResume() {
+    protected void onResume(){
         super.onResume();
-        Log.i("memory", "Puzzle onResume");
-        //try{Thread.sleep(1000);showloop();}catch (Exception e){}
+    }
+    public class MainTimerTask extends TimerTask { //➀
+        @Override
+        public void run() { //②
+            mHandler.post(new Runnable() {  //④
+                @Override
+                public void run() {
+                    WeatherInfoReceiver receiver = new WeatherInfoReceiver();
+                    receiver.execute("");
+                }
+            });
+        }
     }
 
     /*
@@ -72,8 +94,7 @@ public class MainActivity extends AppCompatActivity {
     }
     */
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
-        public WeatherInfoReceiver() {
-        }
+        public WeatherInfoReceiver() {}
 
         @Override
         public synchronized String doInBackground(String... params) {
@@ -87,11 +108,14 @@ public class MainActivity extends AppCompatActivity {
                 con.connect();
                 result = is2String(con.getInputStream());
             }catch(MalformedURLException ex) {
+                System.out.print(ex);
             }catch(IOException ex) {
+                System.out.print(ex);
             }finally {
                 if(con != null) {con.disconnect();}
             }
-            //System.out.print(result);
+            System.out.print(result);
+            Log.i("memory",result);
             return result;
         }
 
@@ -99,9 +123,13 @@ public class MainActivity extends AppCompatActivity {
         public synchronized void onPostExecute(String result){
             try {
                 listView=(ListView) findViewById(R.id.lvCityList);
-                //while(true){
+                int position=0;int y=0;
                 if(adapter!=null){
-
+                    //nullなら初期化するがその前にスクロール位置を記憶する。
+                    position = listView.getFirstVisiblePosition();
+                    y = listView.getChildAt(0).getTop();
+                    listData.clear();
+                    adapter.notifyDataSetChanged();
                 }
                 JSONObject rootJSON = new JSONObject(result);
                 Log.d("JSONObject", rootJSON.toString());
@@ -116,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
                     String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
                     String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
 
-                    //都市データを格納するMapオブジェクトの用意とcityListへのデータ登録。
                     Map<String, String> city = new HashMap<>();
                     city.put("currencyPairCode", currencyPairCode);
                     city.put("open", "Open: " + open);
@@ -126,19 +153,23 @@ public class MainActivity extends AppCompatActivity {
                     city.put("ask", "Ask: " + ask);
                     listData.add(city);
                 }
+                /*
+                if(listDataClone!=null){
+                    for (Map<String, String> listDataMap : listData) { }
+                    for (Map<String, String> listDatacloneMap : listDataClone) {}
+                }*/
                 String[] from = {"currencyPairCode", "bid", "ask", "open", "high", "low"};
                 int[] to = {R.id.currencyPairCode, R.id.bid, R.id.ask, R.id.open, R.id.high, R.id.low};
                 adapter = new SimpleAdapter(MainActivity.this, listData, R.layout.gaitame_list, from, to);
                 //ListViewにSimpleAdapterを設定。
                 listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                Thread.sleep(1000);
-                //listData.clear();
-                //adapter.notifyDataSetChanged();
-                //}
-            }catch(JSONException ex) {
-            }catch(Exception ex) {
+                listView.setSelectionFromTop(position, y);
+                listDataClone =(ArrayList<Map<String, String>>)listData.clone();//配列データの複製
 
+            }catch(JSONException ex) {
+                System.out.print(ex);
+            }catch(Exception ex) {
+                System.out.print(ex);
             }
         }
 
@@ -158,24 +189,25 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
-            case R.id.javase8:
-                listData.clear();
-                adapter.notifyDataSetChanged();
-                try{
-                    WeatherInfoReceiver receiver = new WeatherInfoReceiver();
-                    receiver.execute("");
-
-                }catch(Exception e){
-
-                }finally {
-
+            case R.id.onoffButton:
+                if(mTimer==null){
+                    menu_flag = false;
+                    mTimer = new Timer();
+                    mTimerTask = new MainTimerTask();
+                    mHandler = new Handler();
+                    mTimer.schedule(mTimerTask, 0, 999);
+                    Toast.makeText(this, "自動更新開始", Toast.LENGTH_SHORT).show();
+                }else{
+                    menu_flag = true;
+                    mTimer.cancel();
+                    mTimer = null;
+                    Toast.makeText(this, "自動更新停止", Toast.LENGTH_SHORT).show();
                 }
-                Log.d("menu", "menu1 Selected.");
                 break;
-
         }
         return true;
     }

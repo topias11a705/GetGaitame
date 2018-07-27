@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/javase8"
-        app:showAsAction="never"
-        android:title="javase8"/>
-
+        android:id="@+id/onoffButton"
+        android:title="ON/OFF"
+        app:showAsAction="never" />
 </menu>
