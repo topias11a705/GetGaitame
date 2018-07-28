@@ -1,5 +1,6 @@
 package com.websarva.wings.android.getgaitame;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -52,26 +53,27 @@ public class MainActivity extends AppCompatActivity {
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
     boolean menu_flag = true;
+    Context contex1;
+    Context contex2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
-        listView=(ListView) findViewById(R.id.lvCityList);
-        ListView listView=(ListView) findViewById(R.id.lvCityList);
+        listView = (ListView)findViewById(R.id.lvCityList);
+        ListView listView = (ListView)findViewById(R.id.lvCityList);
         imageView = findViewById(R.id.currency_image_view);
+        contex1 = MainActivity.this;
+        contex2 = getApplicationContext();
 
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHideOnContentScrollEnabled(true);
-        }
+        if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
         try{
             mTimer.schedule(mTimerTask, 0, 999);
         }catch(Exception e){
             System.out.print(e);
         }finally {
-
         }
     }
     @Override
@@ -91,14 +93,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*
-    //リストが選択されたときの処理が記述されたメンバクラス。
+    /*//リストが選択されたときの処理が記述されたメンバクラス。
     private class ListItemClickListener implements AdapterView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        }
-    }
-    */
+        @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {}
+    }*/
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
         public WeatherInfoReceiver() {}
 
@@ -120,17 +118,14 @@ public class MainActivity extends AppCompatActivity {
             }finally {
                 if(con != null) {con.disconnect();}
             }
-            System.out.print(result);
-            Log.i("memory",result);
             return result;
         }
 
         @Override
         public synchronized void onPostExecute(String result){
-            try {
-                listView = (ListView) findViewById(R.id.lvCityList);
-                int position = 0;
-                int y = 0;
+            try{
+                listView = (ListView)findViewById(R.id.lvCityList);
+                int position = 0;int y = 0;
                 if (adapter != null) {
                     //nullなら初期化するがその前にスクロール位置を記憶する。
                     position = listView.getFirstVisiblePosition();
@@ -141,18 +136,15 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject rootJSON = new JSONObject(result);
                 Log.d("JSONObject", rootJSON.toString());
                 //Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
-
-                for(int i = 0; i < 24; i++){
-                    //Log.d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
-                    Log.d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode"));
+                for(int i=0;i<24;i++){
+                    //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
                     String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
                     String open = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("open");
                     String high = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("high");
                     String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
                     String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
                     String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
-
-                    //Map<String, String> city = new HashMap<>();
+                    Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
                     gaitameDataBox gaitame = new gaitameDataBox();
                     gaitame.setCurrencyPairCode(currencyPairCode);
                     gaitame.setOpen("Open: " + open);
@@ -163,31 +155,23 @@ public class MainActivity extends AppCompatActivity {
                     gaitame.setImage(get_image_res(currencyPairCode));
                     listData.add(gaitame);
                 }
-                /********************************************************************************
-                String[] from = {"currencyPairCode", "bid", "ask", "open", "high", "low"};
-                int[] to = {R.id.currencyPairCode, R.id.bid, R.id.ask, R.id.open, R.id.high, R.id.low};
-                adapter = new SimpleAdapter(MainActivity.this, listData, R.layout.gaitame_list, from, to);
-                listView.setAdapter(adapter);
-                listView.setSelectionFromTop(position, y);
-                listDataClone = (ArrayList<Map<String, String>>) listData.clone();//配列データの複製
                 //*******************************************************************************
-                */
-                //*******************************************************************************
-                originalListAdapetr adapter = new originalListAdapetr(MainActivity.this,R.layout.gaitame_list,listData);
-                int padding = (int)(getResources().getDisplayMetrics().density * 8);
-                listView.setPadding(padding, 0, padding, 0);
-                listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
-                listView.setDivider(null);//境界線をなくす
+                originalListAdapetr adapter
+                        = new originalListAdapetr(contex2,R.layout.gaitame_list,listData);
+                //int padding = (int)(getResources().getDisplayMetrics().density * 8);
+                //listView.setPadding(padding, 0, padding, 0);
+                //listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
+                //listView.setDivider(null);//境界線をなくす
 
-                LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-                View header = inflater.inflate(R.layout.list_header_footer, listView, false);
-                View footer = inflater.inflate(R.layout.list_header_footer, listView, false);
-                listView.addHeaderView(header, null, false);
-                listView.addFooterView(footer, null, false);
+                LayoutInflater inflater = LayoutInflater.from(contex2);
+                //View header = inflater.inflate(R.layout.list_header_footer, listView, false);
+                //View footer = inflater.inflate(R.layout.list_header_footer, listView, false);
+                //listView.addHeaderView(header, null, false);
+                //listView.addFooterView(footer, null, false);
                 listView.setAdapter(adapter);
                 listView.setSelectionFromTop(position, y);
                 //*******************************************************************************
-
+            }catch(JSONException ex) {System.out.print(ex);
             }catch(Exception ex) {System.out.print(ex);}
         }
 
@@ -203,33 +187,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public Drawable get_image_res(String s){
-        Resources res = getResources();
         Drawable drawable=null;
         switch (s){
-            case "GBPNZD":drawable=res.getDrawable(R.drawable.gbpnzd);break;
-            case "CADJPY":drawable=res.getDrawable(R.drawable.cadjpy);break;
-            case "GBPAUD":drawable=res.getDrawable(R.drawable.gbpaud);break;
-            case "AUDJPY":drawable=res.getDrawable(R.drawable.audjpy);break;
-            case "AUDNZD":drawable=res.getDrawable(R.drawable.audnzd);break;
-            case "EURCAD":drawable=res.getDrawable(R.drawable.eurcad);break;
-            case "EURUSD":drawable=res.getDrawable(R.drawable.eurusd);break;
-            case "NZDJPY":drawable=res.getDrawable(R.drawable.nzdjpy);break;
-            case "USDCAD":drawable=res.getDrawable(R.drawable.usdcad);break;
-            case "EURGBP":drawable=res.getDrawable(R.drawable.eurgbp);break;
-            case "GBPUSD":drawable=res.getDrawable(R.drawable.gbpusd);break;
-            case "ZARJPY":drawable=res.getDrawable(R.drawable.zarjpy);break;
-            case "EURCHF":drawable=res.getDrawable(R.drawable.eurchf);break;
-            case "CHFJPY":drawable=res.getDrawable(R.drawable.chfjpy);break;
-            case "AUDUSD":drawable=res.getDrawable(R.drawable.audusd);break;
-            case "USDCHF":drawable=res.getDrawable(R.drawable.usdchf);break;
-            case "EURJPY":drawable=res.getDrawable(R.drawable.eurjpy);break;
-            case "GBPCHF":drawable=res.getDrawable(R.drawable.gbpchf);break;
-            case "EURNZD":drawable=res.getDrawable(R.drawable.eurnzd);break;
-            case "NZDUSD":drawable=res.getDrawable(R.drawable.nzdusd);break;
-            case "USDJPY":drawable=res.getDrawable(R.drawable.usdjpy);break;
-            case "EURAUD":drawable=res.getDrawable(R.drawable.euraud);break;
-            case "AUDCHF":drawable=res.getDrawable(R.drawable.audchf);break;
-            case "GBPJPY":drawable=res.getDrawable(R.drawable.gbpjpy);break;
+            case "GBPNZD":drawable=getResources().getDrawable(R.drawable.gbpnzd);break;
+            case "CADJPY":drawable=getResources().getDrawable(R.drawable.cadjpy);break;
+            case "GBPAUD":drawable=getResources().getDrawable(R.drawable.gbpaud);break;
+            case "AUDJPY":drawable=getResources().getDrawable(R.drawable.audjpy);break;
+            case "AUDNZD":drawable=getResources().getDrawable(R.drawable.audnzd);break;
+            case "EURCAD":drawable=getResources().getDrawable(R.drawable.eurcad);break;
+            case "EURUSD":drawable=getResources().getDrawable(R.drawable.eurusd);break;
+            case "NZDJPY":drawable=getResources().getDrawable(R.drawable.nzdjpy);break;
+            case "USDCAD":drawable=getResources().getDrawable(R.drawable.usdcad);break;
+            case "EURGBP":drawable=getResources().getDrawable(R.drawable.eurgbp);break;
+            case "GBPUSD":drawable=getResources().getDrawable(R.drawable.gbpusd);break;
+            case "ZARJPY":drawable=getResources().getDrawable(R.drawable.zarjpy);break;
+            case "EURCHF":drawable=getResources().getDrawable(R.drawable.eurchf);break;
+            case "CHFJPY":drawable=getResources().getDrawable(R.drawable.chfjpy);break;
+            case "AUDUSD":drawable=getResources().getDrawable(R.drawable.audusd);break;
+            case "USDCHF":drawable=getResources().getDrawable(R.drawable.usdchf);break;
+            case "EURJPY":drawable=getResources().getDrawable(R.drawable.eurjpy);break;
+            case "GBPCHF":drawable=getResources().getDrawable(R.drawable.gbpchf);break;
+            case "EURNZD":drawable=getResources().getDrawable(R.drawable.eurnzd);break;
+            case "NZDUSD":drawable=getResources().getDrawable(R.drawable.nzdusd);break;
+            case "USDJPY":drawable=getResources().getDrawable(R.drawable.usdjpy);break;
+            case "EURAUD":drawable=getResources().getDrawable(R.drawable.euraud);break;
+            case "AUDCHF":drawable=getResources().getDrawable(R.drawable.audchf);break;
+            case "GBPJPY":drawable=getResources().getDrawable(R.drawable.gbpjpy);break;
         }
         return drawable;
     }
@@ -238,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){

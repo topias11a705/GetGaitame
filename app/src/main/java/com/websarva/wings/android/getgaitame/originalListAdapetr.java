@@ -13,37 +13,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class originalListAdapetr  extends ArrayAdapter<gaitameDataBox>{
-    LayoutInflater mInflater;
-    ArrayList<gaitameDataBox> listData;
-
+    LayoutInflater mInflater;    ArrayList<gaitameDataBox> listData;
     public originalListAdapetr(Context context, int resource, ArrayList<gaitameDataBox> objects) {
-        super(context, 0);
+        super(context, resource,objects);
         mInflater = LayoutInflater.from(context);
-        listData = objects;
-
+        listData = (ArrayList<gaitameDataBox>)objects;
     }
-
+    @Override
+    public gaitameDataBox getItem(int position) {
+        return listData.get(position);
+    }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if(convertView==null){convertView=mInflater.inflate(R.layout.gaitame_list,parent,false);}
+        if(convertView==null){
+            convertView=mInflater.inflate(R.layout.gaitame_list,parent,false);
+        }
         gaitameDataBox gaitamedata = getItem(position);
 
-        TextView tv = (TextView)convertView.findViewById(R.id.currencyPairCode);
-        tv.setText(gaitamedata.getCurrencyPairCode());
-        tv = (TextView)convertView.findViewById(R.id.bid);
-        tv.setText(gaitamedata.getBid());
-        tv = (TextView)convertView.findViewById(R.id.ask);
-        tv.setText(gaitamedata.getAsk());
-        tv = (TextView)convertView.findViewById(R.id.open);
-        tv.setText(gaitamedata.getOpen());
-        tv = (TextView)convertView.findViewById(R.id.high);
-        tv.setText(gaitamedata.getHigh());
-        tv = (TextView)convertView.findViewById(R.id.low);
-        tv.setText(gaitamedata.getLow());
-        ImageView iv = (ImageView)convertView.findViewById(R.id.currency_image_view);
-        iv.setImageDrawable(gaitamedata.getImage());
-
-
+        ((TextView)convertView.findViewById(R.id.currencyPairCode))
+                .setText(gaitamedata.getCurrencyPairCode());
+        ((TextView)convertView.findViewById(R.id.bid))
+                .setText(gaitamedata.getBid());
+        ((TextView)convertView.findViewById(R.id.ask))
+                .setText(gaitamedata.getAsk());
+        ((TextView)convertView.findViewById(R.id.open))
+                .setText(gaitamedata.getOpen());
+        ((TextView)convertView.findViewById(R.id.high))
+                .setText(gaitamedata.getHigh());
+        ((TextView)convertView.findViewById(R.id.low))
+                .setText(gaitamedata.getLow());
+        ((ImageView)convertView.findViewById(R.id.currency_image_view))
+                .setImageDrawable(gaitamedata.getImage());
         return convertView;
     }
 }
