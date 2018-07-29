@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     boolean menu_flag = true;
     Context contex1;
     Context contex2;
-
+    int position = 0;int y = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
         try{
-            mTimer.schedule(mTimerTask, 0, 999);
+            mTimer.schedule(mTimerTask, 0, 3000);
         }catch(Exception e){
             System.out.print(e);
         }finally {
@@ -125,18 +125,22 @@ public class MainActivity extends AppCompatActivity {
         public synchronized void onPostExecute(String result){
             try{
                 listView = (ListView)findViewById(R.id.lvCityList);
-                int position = 0;int y = 0;
+
                 if (adapter != null) {
                     //nullなら初期化するがその前にスクロール位置を記憶する。
                     position = listView.getFirstVisiblePosition();
                     y = listView.getChildAt(0).getTop();
                     listData.clear();
                     adapter.notifyDataSetChanged();
+
+                }else{
+                    Log.d("JSONObject", "AAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 }
                 JSONObject rootJSON = new JSONObject(result);
                 Log.d("JSONObject", rootJSON.toString());
                 //Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
                 for(int i=0;i<24;i++){
+                    if(i==0){listData.clear();}
                     //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
                     String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
                     String open = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("open");
@@ -155,21 +159,24 @@ public class MainActivity extends AppCompatActivity {
                     gaitame.setImage(get_image_res(currencyPairCode));
                     listData.add(gaitame);
                 }
+
                 //*******************************************************************************
                 originalListAdapetr adapter
-                        = new originalListAdapetr(contex2,R.layout.gaitame_list,listData);
+                        = new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
                 //int padding = (int)(getResources().getDisplayMetrics().density * 8);
                 //listView.setPadding(padding, 0, padding, 0);
-                //listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
+                listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
                 //listView.setDivider(null);//境界線をなくす
 
-                LayoutInflater inflater = LayoutInflater.from(contex2);
+                LayoutInflater inflater = LayoutInflater.from(contex1);
                 //View header = inflater.inflate(R.layout.list_header_footer, listView, false);
                 //View footer = inflater.inflate(R.layout.list_header_footer, listView, false);
                 //listView.addHeaderView(header, null, false);
                 //listView.addFooterView(footer, null, false);
-                listView.setAdapter(adapter);
                 listView.setSelectionFromTop(position, y);
+                listView.setAdapter(adapter);
+
+ 
                 //*******************************************************************************
             }catch(JSONException ex) {System.out.print(ex);
             }catch(Exception ex) {System.out.print(ex);}
