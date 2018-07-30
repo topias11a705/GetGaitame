@@ -13,15 +13,18 @@
         android:layout_weight="1.1">
         <TextView
             android:id="@+id/currencyPairCode"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
             android:text="NewText1"
             android:textSize="12dp"
-            android:gravity="center"/>
+            android:gravity="left"/>
         <ImageView
             android:id="@+id/currency_image_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent"
+            android:scaleType="fitStart"
+            android:gravity="left"
+            />
     </LinearLayout>
     <LinearLayout
         android:orientation="vertical"
