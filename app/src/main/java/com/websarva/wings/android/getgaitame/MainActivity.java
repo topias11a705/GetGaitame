@@ -214,25 +214,27 @@ public class MainActivity extends AppCompatActivity {
 
                     for (gaitameDataBox comB : listData){
                         ArraysCopied.add(new gaitameDataBox(
-                            new String((String)comB.getCurrencyPairCode()),
-                            new String((String)comB.getOpen()),
-                            new String((String)comB.getHigh()),
-                            new String((String)comB.getLow()),
-                            new String((String)comB.getBid()),
-                            new String((String)comB.getAsk())
+                            (comB.clone()).getCurrencyPairCode(),
+                            (comB.clone()).getOpen(),
+                            (comB.clone()).getHigh(),
+                            (comB.clone()).getLow(),
+                            (comB.clone()).getBid(),
+                            comB.clone().getAsk()
                         ));
                     }
 
-                    Log .d("JSONObject", ArraysCopied.get(1).getBid());
+                    //Log .d("JSONObject", ArraysCopied.get(1).getBid());
                     listData.clear();
+                    Log .d("JSONObject", ArraysCopied.get(1).getBid());
                     //TextView text1 = (TextView)(((RecyclerView)findViewById(R.id.lvCityList)).getChildAt(23)).findViewById(R.id.ask);
 
                 }
                 jsonToListData(result);
                 for(int i=0;i<24;i++){
-                    listData.get(i).getBid().equals(ArraysCopied.get(i).getBid());
-                }
 
+                    Log .d("JSONObject", String.valueOf(listData.get(i).getBid().equals(ArraysCopied.get(i).getBid())));
+                    //listData.get(i).getBid().equals(ArraysCopied.get(i).getBid());
+                }
 
                 if(adapter==null){
                     adapter = new RecyclerListAdapter(listData);
@@ -245,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         }
     private synchronized void jsonToListData(String result) throws JSONException{
         JSONObject rootJSON = new JSONObject(result);
-        Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
+        //Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
         for(int i=0;i<24;i++) {
             //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
             String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
@@ -254,15 +256,16 @@ public class MainActivity extends AppCompatActivity {
             String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
             String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
             String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
+            gaitameDataBox gaitame =new gaitameDataBox(currencyPairCode,"Open: " + open,"High: " + high,"Low: " + low,"Bid: " + bid,"Ask: " + ask);
+            /*
             gaitameDataBox gaitame = new gaitameDataBox();
             gaitame.setCurrencyPairCode(currencyPairCode);
-            gaitame.setOpen("Open: " + open);
-            gaitame.setHigh("High: " + high);
-            gaitame.setLow("Low: " + low);
-            gaitame.setBid("Bid: " + bid);
+            gaitame.setOpen("Open: " + open);gaitame.setHigh("High: " + high);
+            gaitame.setLow("Low: " + low);gaitame.setBid("Bid: " + bid);
             gaitame.setAsk("Ask: " + ask);
+            */
             gaitame.setImage(get_image_res(currencyPairCode));
-            listData.add(gaitame);
+            listData.add(gaitame.clone());
             //Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
         }
     }
