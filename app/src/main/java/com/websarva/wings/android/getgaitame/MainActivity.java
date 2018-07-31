@@ -2,22 +2,29 @@ package com.websarva.wings.android.getgaitame;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -31,6 +38,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,6 +47,7 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     ListView listView;
+    RecyclerView recyclerView;
     ImageView imageView;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
@@ -51,24 +61,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
-        listView = (ListView)findViewById(R.id.lvCityList);
-        listView.setFastScrollEnabled(true);
+        //listView = (ListView)findViewById(R.id.lvCityList);
+        //listView.setFastScrollEnabled(true);
         imageView = findViewById(R.id.currency_image_view);
         contex1 = MainActivity.this; contex2 = getApplicationContext();
 
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+        /*listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i){
             }
             @Override
             public void onScroll(AbsListView absListView,int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             }
-        });
+        });*/
         //ActionBar actionBar = getSupportActionBar();
         //if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
         Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
-        toolbar.setTitle(R.string.toolbar_title_on);
+        //toolbar.setTitle(R.string.toolbar_title_on);
         //setSupportActionBar(toolbar);
+        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
+        toolbarLayout.setTitle(getString(R.string.toolbar_title_on));
+        toolbarLayout.setExpandedTitleColor(Color.WHITE);
+        toolbarLayout.setCollapsedTitleTextColor(Color.LTGRAY);
+
+        RecyclerView lvMenu = findViewById(R.id.lvCityList);
+
+        //RecyclerViewにレイアウトマネージャーとしてLinearLayoutManagerを設定。
+        lvMenu.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        //以下は他の2種のレイアウトマネージャー。
+//		new GridLayoutManager(ScrollListActivity.this, 5);
+//		new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
         toolbar.inflateMenu(R.menu.menu);
         try{
             mTimer.schedule(mTimerTask, 0, 999);
@@ -188,15 +210,83 @@ public class MainActivity extends AppCompatActivity {
                     adapter.ArrayDate=listData;
                 }
 
+                RecyclerListAdapter adapter = new RecyclerListAdapter(listData);
+                recyclerView.setAdapter(adapter);
 
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                listView.setSelectionFromTop(position, y);
+                //listView.setAdapter(adapter);
+                //adapter.notifyDataSetChanged();
+                //listView.setSelectionFromTop(position, y);
                 //*******************************************************************************
             }catch(JSONException ex) {System.out.print(ex);
             }catch(Exception ex) {System.out.print(ex);}
         }
+        //***************************************************************************************************
+        //***************************************************************************************************
+        private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
+            TextView currencyPairCodetextView_textView;
+            TextView bid_textView;
+            TextView ask_textView;
+            TextView open_textView;
+            TextView high_textView;
+            TextView low_textView;
+            ImageView currency_image_view;
 
+            public RecyclerListViewHolder(View itemView) {
+                //親クラスのコンストラクタの呼び出し。
+                super(itemView);
+                currencyPairCodetextView_textView = (TextView) itemView.findViewById(R.id.currencyPairCode);
+                bid_textView = (TextView) itemView.findViewById(R.id.bid);
+                ask_textView = (TextView) itemView.findViewById(R.id.ask);
+                open_textView = (TextView) itemView.findViewById(R.id.open);
+                high_textView = (TextView) itemView.findViewById(R.id.high);
+                low_textView = (TextView) itemView.findViewById(R.id.low);
+                currency_image_view = (ImageView) itemView.findViewById(R.id.currency_image_view);
+            }
+        }
+        private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
+            private ArrayList<gaitameDataBox> _listData;
+
+            public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
+                //引数のリストデータをフィールドに格納。
+                _listData = listData;
+            }
+
+            @Override
+            public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+                return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
+                gaitameDataBox item = _listData.get(i);
+                //リストデータから該当1行分のデータを取得。
+                if (_listData != null && _listData.size() > i && _listData.get(i) != null) {
+                    holder.currencyPairCodetextView_textView.setText(_listData.get(i).getCurrencyPairCode());
+                    holder.bid_textView.setText(_listData.get(i).getBid());
+                    holder.ask_textView.setText(_listData.get(i).getAsk());
+                    holder.open_textView.setText(_listData.get(i).getOpen());
+                    holder.high_textView.setText(_listData.get(i).getHigh());
+                    holder.low_textView.setText(_listData.get(i).getLow());
+                    holder.currency_image_view.setImageDrawable(_listData.get(i).getImage());
+                }
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(contex1, "クリック", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public int getItemCount() {
+                //リストデータ中の件数をリターン。
+                if(_listData != null){return _listData.size();}
+                else{return 0;}
+            }
+        }
+        //***************************************************************************************************
+        //***************************************************************************************************
         private String is2String(InputStream is) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             StringBuilder sb = new StringBuilder();
@@ -237,5 +327,11 @@ public class MainActivity extends AppCompatActivity {
             case "GBPJPY":drawable=getResources().getDrawable(R.drawable.gbpjpy);break;
         }
         return drawable;
+    }
+    private class ItemClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+
+        }
     }
 }
