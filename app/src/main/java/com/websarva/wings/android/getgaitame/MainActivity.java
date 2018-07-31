@@ -9,21 +9,17 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,46 +31,78 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
-    //ArrayList<Map<String, String>> listData = new ArrayList<Map<String, String>>();
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
-    ArrayList<Map<String, String>> listDataClone;
     ListView listView;
-    SimpleAdapter adapter;
     ImageView imageView;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
     boolean menu_flag = true;
-    Context contex1;
-    Context contex2;
-    int position = 0;int y = 0;
+    Context contex1;Context contex2;
+    static int position = 0;static int y = 0;
+    static originalListAdapetr adapter =null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
         listView = (ListView)findViewById(R.id.lvCityList);
-        ListView listView = (ListView)findViewById(R.id.lvCityList);
+        listView.setFastScrollEnabled(true);
         imageView = findViewById(R.id.currency_image_view);
-        contex1 = MainActivity.this;
-        contex2 = getApplicationContext();
+        contex1 = MainActivity.this; contex2 = getApplicationContext();
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i){
+            }
+            @Override
+            public void onScroll(AbsListView absListView,int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            }
+        });
+        //ActionBar actionBar = getSupportActionBar();
+        //if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
+        Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
+        toolbar.setTitle(R.string.toolbar_title_on);
+        //setSupportActionBar(toolbar);
+        toolbar.inflateMenu(R.menu.menu);
         try{
-            mTimer.schedule(mTimerTask, 0, 3000);
+            mTimer.schedule(mTimerTask, 0, 999);
         }catch(Exception e){
             System.out.print(e);
         }finally {
         }
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch(item.getItemId()){
+                    case R.id.onoffButton:
+                        if(mTimer==null){
+                            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
+                            menu_flag = false;
+                            mTimer = new Timer();
+                            mTimerTask = new MainTimerTask();
+                            mHandler = new Handler();
+                            mTimer.schedule(mTimerTask, 0, 999);
+                            Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+                        }else{
+                            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
+                            menu_flag = true;
+                            mTimer.cancel();
+                            mTimer = null;
+                            Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                }
+                return true;
+            }
+        });
+
+
     }
     @Override
     protected void onResume(){
@@ -124,21 +152,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public synchronized void onPostExecute(String result){
             try{
-                listView = (ListView)findViewById(R.id.lvCityList);
-
                 if (adapter != null) {
                     //nullなら初期化するがその前にスクロール位置を記憶する。
                     position = listView.getFirstVisiblePosition();
                     y = listView.getChildAt(0).getTop();
                     listData.clear();
-                    adapter.notifyDataSetChanged();
-
-                }else{
-                    Log.d("JSONObject", "AAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 }
                 JSONObject rootJSON = new JSONObject(result);
-                Log.d("JSONObject", rootJSON.toString());
-                //Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
+                Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
                 for(int i=0;i<24;i++){
                     if(i==0){listData.clear();}
                     //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
@@ -148,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
                     String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
                     String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
-                    Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
+                    //Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
                     gaitameDataBox gaitame = new gaitameDataBox();
                     gaitame.setCurrencyPairCode(currencyPairCode);
                     gaitame.setOpen("Open: " + open);
@@ -161,22 +182,16 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //*******************************************************************************
-                originalListAdapetr adapter
-                        = new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
-                //int padding = (int)(getResources().getDisplayMetrics().density * 8);
-                //listView.setPadding(padding, 0, padding, 0);
-                listView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
-                //listView.setDivider(null);//境界線をなくす
+                if(adapter==null){
+                    adapter= new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
+                }else{
+                    adapter.ArrayDate=listData;
+                }
 
-                LayoutInflater inflater = LayoutInflater.from(contex1);
-                //View header = inflater.inflate(R.layout.list_header_footer, listView, false);
-                //View footer = inflater.inflate(R.layout.list_header_footer, listView, false);
-                //listView.addHeaderView(header, null, false);
-                //listView.addFooterView(footer, null, false);
-                listView.setSelectionFromTop(position, y);
+
                 listView.setAdapter(adapter);
-
- 
+                adapter.notifyDataSetChanged();
+                listView.setSelectionFromTop(position, y);
                 //*******************************************************************************
             }catch(JSONException ex) {System.out.print(ex);
             }catch(Exception ex) {System.out.print(ex);}
@@ -222,31 +237,5 @@ public class MainActivity extends AppCompatActivity {
             case "GBPJPY":drawable=getResources().getDrawable(R.drawable.gbpjpy);break;
         }
         return drawable;
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.onoffButton:
-                if(mTimer==null){
-                    menu_flag = false;
-                    mTimer = new Timer();
-                    mTimerTask = new MainTimerTask();
-                    mHandler = new Handler();
-                    mTimer.schedule(mTimerTask, 0, 999);
-                    Toast.makeText(this, "自動更新開始", Toast.LENGTH_SHORT).show();
-                }else{
-                    menu_flag = true;
-                    mTimer.cancel();
-                    mTimer = null;
-                    Toast.makeText(this, "自動更新停止", Toast.LENGTH_SHORT).show();
-                }
-                break;
-        }
-        return true;
     }
 }

@@ -13,15 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class originalListAdapetr  extends ArrayAdapter<gaitameDataBox>{
-    LayoutInflater mInflater;    ArrayList<gaitameDataBox> listData;
+    LayoutInflater mInflater;    ArrayList<gaitameDataBox> ArrayDate;
     public originalListAdapetr(Context context, int resource, ArrayList<gaitameDataBox> objects) {
         super(context, resource,objects);
         mInflater = LayoutInflater.from(context);
-        listData = (ArrayList<gaitameDataBox>)objects;
+        ArrayDate = (ArrayList<gaitameDataBox>)objects;
     }
     @Override
     public gaitameDataBox getItem(int position) {
-        return listData.get(position);
+        return ArrayDate.get(position);
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
