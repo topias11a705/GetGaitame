@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -46,8 +47,6 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
-    ListView listView;
-    RecyclerView recyclerView;
     ImageView imageView;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
@@ -55,16 +54,14 @@ public class MainActivity extends AppCompatActivity {
     boolean menu_flag = true;
     Context contex1;Context contex2;
     static int position = 0;static int y = 0;
-    //static originalListAdapetr adapter =null;
     RecyclerListAdapter adapter=null;
     RecyclerView recycleview;
+    LinearLayoutManager mLinearLayoutManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
-        //listView = (ListView)findViewById(R.id.lvCityList);
-        //listView.setFastScrollEnabled(true);
         imageView = findViewById(R.id.currency_image_view);
         contex1 = MainActivity.this; contex2 = getApplicationContext();
 
@@ -77,10 +74,13 @@ public class MainActivity extends AppCompatActivity {
         recycleview = findViewById(R.id.lvCityList);
 
         //RecyclerViewにレイアウトマネージャーとしてLinearLayoutManagerを設定。
-        recycleview.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         //以下は他の2種のレイアウトマネージャー。
 //		new GridLayoutManager(MainActivity.this, 5);
 //		new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
+        mLinearLayoutManager= new LinearLayoutManager(MainActivity.this);
+        recycleview.setLayoutManager(mLinearLayoutManager);
+        recycleview.addItemDecoration(new DividerItemDecoration(MainActivity.this, mLinearLayoutManager.getOrientation()));
+
         toolbar.inflateMenu(R.menu.menu);
         try{
             mTimer.schedule(mTimerTask, 0, 999);
@@ -139,16 +139,10 @@ public class MainActivity extends AppCompatActivity {
     }*/
     //***************************************************************************************************
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
-        TextView currencyPairCodetextView_textView;
-        TextView bid_textView;
-        TextView ask_textView;
-        TextView open_textView;
-        TextView high_textView;
-        TextView low_textView;
+        TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
         ImageView currency_image_view;
 
         public RecyclerListViewHolder(View itemView) {
-            //親クラスのコンストラクタの呼び出し。
             super(itemView);
             currencyPairCodetextView_textView = (TextView) itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView) itemView.findViewById(R.id.bid);
@@ -160,10 +154,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
-        private ArrayList<gaitameDataBox> _listData;
+         ArrayList<gaitameDataBox> _listData;
 
         public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
-            //引数のリストデータをフィールドに格納。
             _listData = listData;
         }
 
@@ -176,15 +169,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
             gaitameDataBox item = _listData.get(i);
-            //リストデータから該当1行分のデータを取得。
-            if (_listData != null && _listData.size() > i && _listData.get(i) != null) {
-                holder.currencyPairCodetextView_textView.setText(_listData.get(i).getCurrencyPairCode());
-                holder.bid_textView.setText(_listData.get(i).getBid());
-                holder.ask_textView.setText(_listData.get(i).getAsk());
-                holder.open_textView.setText(_listData.get(i).getOpen());
-                holder.high_textView.setText(_listData.get(i).getHigh());
-                holder.low_textView.setText(_listData.get(i).getLow());
-                holder.currency_image_view.setImageDrawable(_listData.get(i).getImage());
+            if (_listData != null && _listData.size() > i && item != null) {
+                holder.currencyPairCodetextView_textView.setText(item.getCurrencyPairCode());
+                holder.bid_textView.setText(item.getBid());
+                holder.ask_textView.setText(item.getAsk());
+                holder.open_textView.setText(item.getOpen());
+                holder.high_textView.setText(item.getHigh());
+                holder.low_textView.setText(item.getLow());
+                holder.currency_image_view.setImageDrawable(item.getImage());
             }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -229,53 +221,46 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public synchronized void onPostExecute(String result){
             try{
-                /*if (adapter != null) {
-                    //nullなら初期化するがその前にスクロール位置を記憶する。
-                    position = listView.getFirstVisiblePosition();
-                    y = listView.getChildAt(0).getTop();
+                if (adapter != null) {
+                    position = mLinearLayoutManager.findFirstVisibleItemPosition();
+                    View v = recycleview.getChildAt(0);
+                     y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
                     listData.clear();
-                }*/
-                JSONObject rootJSON = new JSONObject(result);
-                Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
-                for(int i=0;i<24;i++){
-                    if(i==0){listData.clear();}
-                    //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
-                    String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
-                    String open = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("open");
-                    String high = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("high");
-                    String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
-                    String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
-                    String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
-                    //Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
-                    gaitameDataBox gaitame = new gaitameDataBox();
-                    gaitame.setCurrencyPairCode(currencyPairCode);
-                    gaitame.setOpen("Open: " + open);
-                    gaitame.setHigh("High: " + high);
-                    gaitame.setLow("Low: " + low);
-                    gaitame.setBid("Bid: " + bid);
-                    gaitame.setAsk("Ask: " + ask);
-                    gaitame.setImage(get_image_res(currencyPairCode));
-                    listData.add(gaitame);
                 }
-
-                //*******************************************************************************
+                jsonToListData(result);
                 if(adapter==null){
-                    //adapter= new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
-
+                    adapter = new RecyclerListAdapter(listData);
                 }else{
-                    //adapter.ArrayDate=listData;
+                    adapter._listData=listData;
                 }
-                adapter = new RecyclerListAdapter(listData);
                 recycleview.setAdapter(adapter);
-                //listView.setAdapter(adapter);
-                //adapter.notifyDataSetChanged();
-                //listView.setSelectionFromTop(position, y);
-                //*******************************************************************************
-            }catch(JSONException ex) {System.out.print(ex);
+                mLinearLayoutManager.scrollToPositionWithOffset(position, y);
             }catch(Exception ex) {System.out.print(ex);}
         }
-
-        private String is2String(InputStream is) throws IOException {
+    private synchronized void jsonToListData(String result) throws JSONException{
+        JSONObject rootJSON = new JSONObject(result);
+        Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
+        for(int i=0;i<24;i++) {
+            //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
+            String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
+            String open = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("open");
+            String high = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("high");
+            String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
+            String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
+            String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
+            gaitameDataBox gaitame = new gaitameDataBox();
+            gaitame.setCurrencyPairCode(currencyPairCode);
+            gaitame.setOpen("Open: " + open);
+            gaitame.setHigh("High: " + high);
+            gaitame.setLow("Low: " + low);
+            gaitame.setBid("Bid: " + bid);
+            gaitame.setAsk("Ask: " + ask);
+            gaitame.setImage(get_image_res(currencyPairCode));
+            listData.add(gaitame);
+            //Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
+        }
+    }
+    private String is2String(InputStream is) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             StringBuilder sb = new StringBuilder();
             char[] b = new char[1024];
