@@ -55,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
     boolean menu_flag = true;
     Context contex1;Context contex2;
     static int position = 0;static int y = 0;
-    static originalListAdapetr adapter =null;
+    //static originalListAdapetr adapter =null;
+    RecyclerListAdapter adapter=null;
+    RecyclerView recycleview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,30 +68,18 @@ public class MainActivity extends AppCompatActivity {
         imageView = findViewById(R.id.currency_image_view);
         contex1 = MainActivity.this; contex2 = getApplicationContext();
 
-        /*listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView absListView, int i){
-            }
-            @Override
-            public void onScroll(AbsListView absListView,int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            }
-        });*/
-        //ActionBar actionBar = getSupportActionBar();
-        //if (actionBar != null) { actionBar.setHideOnContentScrollEnabled(true); }
-        Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
-        //toolbar.setTitle(R.string.toolbar_title_on);
-        //setSupportActionBar(toolbar);
-        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
-        toolbarLayout.setTitle(getString(R.string.toolbar_title_on));
-        toolbarLayout.setExpandedTitleColor(Color.WHITE);
-        toolbarLayout.setCollapsedTitleTextColor(Color.LTGRAY);
 
-        RecyclerView lvMenu = findViewById(R.id.lvCityList);
+        Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
+        toolbar.setTitle(R.string.toolbar_title_on);
+        //setSupportActionBar(toolbar);
+
+        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
+        recycleview = findViewById(R.id.lvCityList);
 
         //RecyclerViewにレイアウトマネージャーとしてLinearLayoutManagerを設定。
-        lvMenu.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        recycleview.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         //以下は他の2種のレイアウトマネージャー。
-//		new GridLayoutManager(ScrollListActivity.this, 5);
+//		new GridLayoutManager(MainActivity.this, 5);
 //		new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
         toolbar.inflateMenu(R.menu.menu);
         try{
@@ -147,6 +137,71 @@ public class MainActivity extends AppCompatActivity {
     private class ListItemClickListener implements AdapterView.OnItemClickListener {
         @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {}
     }*/
+    //***************************************************************************************************
+    private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
+        TextView currencyPairCodetextView_textView;
+        TextView bid_textView;
+        TextView ask_textView;
+        TextView open_textView;
+        TextView high_textView;
+        TextView low_textView;
+        ImageView currency_image_view;
+
+        public RecyclerListViewHolder(View itemView) {
+            //親クラスのコンストラクタの呼び出し。
+            super(itemView);
+            currencyPairCodetextView_textView = (TextView) itemView.findViewById(R.id.currencyPairCode);
+            bid_textView = (TextView) itemView.findViewById(R.id.bid);
+            ask_textView = (TextView) itemView.findViewById(R.id.ask);
+            open_textView = (TextView) itemView.findViewById(R.id.open);
+            high_textView = (TextView) itemView.findViewById(R.id.high);
+            low_textView = (TextView) itemView.findViewById(R.id.low);
+            currency_image_view = (ImageView) itemView.findViewById(R.id.currency_image_view);
+        }
+    }
+    private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
+        private ArrayList<gaitameDataBox> _listData;
+
+        public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
+            //引数のリストデータをフィールドに格納。
+            _listData = listData;
+        }
+
+        @Override
+        public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+            return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
+            gaitameDataBox item = _listData.get(i);
+            //リストデータから該当1行分のデータを取得。
+            if (_listData != null && _listData.size() > i && _listData.get(i) != null) {
+                holder.currencyPairCodetextView_textView.setText(_listData.get(i).getCurrencyPairCode());
+                holder.bid_textView.setText(_listData.get(i).getBid());
+                holder.ask_textView.setText(_listData.get(i).getAsk());
+                holder.open_textView.setText(_listData.get(i).getOpen());
+                holder.high_textView.setText(_listData.get(i).getHigh());
+                holder.low_textView.setText(_listData.get(i).getLow());
+                holder.currency_image_view.setImageDrawable(_listData.get(i).getImage());
+            }
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(contex1, "クリック", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            //リストデータ中の件数をリターン。
+            if(_listData != null){return _listData.size();}
+            else{return 0;}
+        }
+    }
+    //***************************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
         public WeatherInfoReceiver() {}
 
@@ -174,12 +229,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public synchronized void onPostExecute(String result){
             try{
-                if (adapter != null) {
+                /*if (adapter != null) {
                     //nullなら初期化するがその前にスクロール位置を記憶する。
                     position = listView.getFirstVisiblePosition();
                     y = listView.getChildAt(0).getTop();
                     listData.clear();
-                }
+                }*/
                 JSONObject rootJSON = new JSONObject(result);
                 Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
                 for(int i=0;i<24;i++){
@@ -205,14 +260,13 @@ public class MainActivity extends AppCompatActivity {
 
                 //*******************************************************************************
                 if(adapter==null){
-                    adapter= new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
+                    //adapter= new originalListAdapetr(contex1,R.layout.gaitame_list,listData);
+
                 }else{
-                    adapter.ArrayDate=listData;
+                    //adapter.ArrayDate=listData;
                 }
-
-                RecyclerListAdapter adapter = new RecyclerListAdapter(listData);
-                recyclerView.setAdapter(adapter);
-
+                adapter = new RecyclerListAdapter(listData);
+                recycleview.setAdapter(adapter);
                 //listView.setAdapter(adapter);
                 //adapter.notifyDataSetChanged();
                 //listView.setSelectionFromTop(position, y);
@@ -220,73 +274,7 @@ public class MainActivity extends AppCompatActivity {
             }catch(JSONException ex) {System.out.print(ex);
             }catch(Exception ex) {System.out.print(ex);}
         }
-        //***************************************************************************************************
-        //***************************************************************************************************
-        private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
-            TextView currencyPairCodetextView_textView;
-            TextView bid_textView;
-            TextView ask_textView;
-            TextView open_textView;
-            TextView high_textView;
-            TextView low_textView;
-            ImageView currency_image_view;
 
-            public RecyclerListViewHolder(View itemView) {
-                //親クラスのコンストラクタの呼び出し。
-                super(itemView);
-                currencyPairCodetextView_textView = (TextView) itemView.findViewById(R.id.currencyPairCode);
-                bid_textView = (TextView) itemView.findViewById(R.id.bid);
-                ask_textView = (TextView) itemView.findViewById(R.id.ask);
-                open_textView = (TextView) itemView.findViewById(R.id.open);
-                high_textView = (TextView) itemView.findViewById(R.id.high);
-                low_textView = (TextView) itemView.findViewById(R.id.low);
-                currency_image_view = (ImageView) itemView.findViewById(R.id.currency_image_view);
-            }
-        }
-        private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
-            private ArrayList<gaitameDataBox> _listData;
-
-            public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
-                //引数のリストデータをフィールドに格納。
-                _listData = listData;
-            }
-
-            @Override
-            public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-                return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
-            }
-
-            @Override
-            public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
-                gaitameDataBox item = _listData.get(i);
-                //リストデータから該当1行分のデータを取得。
-                if (_listData != null && _listData.size() > i && _listData.get(i) != null) {
-                    holder.currencyPairCodetextView_textView.setText(_listData.get(i).getCurrencyPairCode());
-                    holder.bid_textView.setText(_listData.get(i).getBid());
-                    holder.ask_textView.setText(_listData.get(i).getAsk());
-                    holder.open_textView.setText(_listData.get(i).getOpen());
-                    holder.high_textView.setText(_listData.get(i).getHigh());
-                    holder.low_textView.setText(_listData.get(i).getLow());
-                    holder.currency_image_view.setImageDrawable(_listData.get(i).getImage());
-                }
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(contex1, "クリック", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public int getItemCount() {
-                //リストデータ中の件数をリターン。
-                if(_listData != null){return _listData.size();}
-                else{return 0;}
-            }
-        }
-        //***************************************************************************************************
-        //***************************************************************************************************
         private String is2String(InputStream is) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             StringBuilder sb = new StringBuilder();
