@@ -43,7 +43,7 @@ public class originalListAdapetr  extends ArrayAdapter<gaitameDataBox>{
         ((TextView)convertView.findViewById(R.id.low))
                 .setText(gaitamedata.getLow());
         ((ImageView)convertView.findViewById(R.id.currency_image_view))
-                .setImageDrawable(gaitamedata.getImage());
+                .setImageDrawable(gaitamedata.getFlag_image());
         return convertView;
     }
 }

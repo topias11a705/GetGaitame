@@ -13,9 +13,12 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -48,9 +51,12 @@ public class MainActivity extends AppCompatActivity {
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
     boolean menu_flag = true;
+    boolean recycleHelper_flag = true;
     Context contex1;Context contex2;
     int position = 0; int y = 0;
     RecyclerListAdapter adapter=null;
+    GestureDetector gd;
+    private int pref_browser_gesturevelo = 350;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,19 +91,9 @@ public class MainActivity extends AppCompatActivity {
                 switch(item.getItemId()){
                     case R.id.onoffButton:
                         if(mTimer==null){
-                            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
-                            menu_flag = false;
-                            mTimer = new Timer();
-                            mTimerTask = new MainTimerTask();
-                            mHandler = new Handler();
-                            mTimer.schedule(mTimerTask, 0, 999);
-                            Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+                            restartGetGaitame();
                         }else{
-                            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
-                            menu_flag = true;
-                            mTimer.cancel();
-                            mTimer = null;
-                            Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+                            stopGetGaitame();
                         }
                         break;
                 }
@@ -144,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
     }
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
         ArrayList<gaitameDataBox> _listData;
-
         public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
             _listData = listData;
         }
@@ -244,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 }
-
                 if(adapter==null){
                     adapter = new RecyclerListAdapter(listData);
                 }else{
@@ -252,8 +246,49 @@ public class MainActivity extends AppCompatActivity {
                 }
                 recycleview.setAdapter(adapter);
                 mLinearLayoutManager.scrollToPositionWithOffset(position, y);
+                if(recycleHelper_flag){
+                    ItemTouchHelper mIth  = new ItemTouchHelper(
+                            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP |
+                                    ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+                                public boolean onMove(RecyclerView recyclerView,RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                                    final int fromPos = viewHolder.getAdapterPosition();
+                                    final int toPos = target.getAdapterPosition();
+                                    adapter.notifyItemMoved(fromPos, toPos);
+                                    Log.d("Event", "onMove");
+                                    return true;// true if moved, false otherwise
+                                }
+                                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                                    final int fromPos = viewHolder.getAdapterPosition();
+                                    listData.remove(fromPos);
+                                    adapter.notifyItemRemoved(fromPos);
+                                    Log.d("Event", "onSwiped");
+                                }
+                                //選択ステータスが変更された場合の処理を指定します
+                                //この例ではAdapterView内のcontainerViewを表示にしています
+                                //containerViewには背景色を指定しており、ドラッグが開始された際に見やすくなるようにしています
+                                @Override
+                                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                                    super.onSelectedChanged(viewHolder, actionState);
+                                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) viewHolder.itemView.setVisibility(View.VISIBLE);
+                                    Log.d("Event", "onSelectedChanged");
+                                }
+                                //選択が終わった時（Dragが終わった時など）の処理を指定します
+                                //今回はアイテムをDropした際にcontainerViewを非表示にして通常表示に戻しています
+                                @Override
+                                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                                    super.clearView(recyclerView, viewHolder);
+                                    viewHolder.itemView.setVisibility(View.GONE);
+                                    Log.d("Event", "clearView");
+                                }
+                            });
+                    mIth .attachToRecyclerView(recycleview);
+                    recycleHelper_flag = false;
+                }
             }catch(Exception ex) {ex.printStackTrace();}
         }
+
+
+    }
     private synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
         ArrayList<gaitameDataBox> listdata = new ArrayList<>();
         JSONObject rootJSON = new JSONObject(result);
@@ -275,15 +310,14 @@ public class MainActivity extends AppCompatActivity {
         return listdata;
     }
     private String is2String(InputStream is) throws IOException {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            StringBuilder sb = new StringBuilder();
-            char[] b = new char[1024];
-            int line;
-            while(0 <= (line = reader.read(b))) {
-                sb.append(b, 0, line);
-            }
-            return sb.toString();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        char[] b = new char[1024];
+        int line;
+        while(0 <= (line = reader.read(b))) {
+            sb.append(b, 0, line);
         }
+        return sb.toString();
     }
     public Drawable get_image_res(String s){
         Drawable drawable=null;
@@ -315,10 +349,27 @@ public class MainActivity extends AppCompatActivity {
         }
         return drawable;
     }
+    public void stopGetGaitame(){
+        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
+        menu_flag = true;
+        mTimer.cancel();
+        mTimer = null;
+        Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+    }
+    public void restartGetGaitame(){
+        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
+        menu_flag = false;
+        mTimer = new Timer();
+        mTimerTask = new MainTimerTask();
+        mHandler = new Handler();
+        mTimer.schedule(mTimerTask, 0, 999);
+        Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+    }
     private class ItemClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
 
         }
     }
+
 }
