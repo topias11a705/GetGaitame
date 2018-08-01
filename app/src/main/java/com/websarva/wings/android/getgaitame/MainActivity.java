@@ -1,6 +1,7 @@
 package com.websarva.wings.android.getgaitame;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,8 +41,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
-    CopyOnWriteArrayList<gaitameDataBox> listData = new CopyOnWriteArrayList<>();
-    CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
+    ArrayList<gaitameDataBox> listData = new ArrayList<>();
+    //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
     RecyclerView recycleview; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
@@ -123,10 +127,11 @@ public class MainActivity extends AppCompatActivity {
     //***************************************************************************************************
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
-        ImageView currency_image_view;
+        ImageView currency_image_view,yajirusi_view; LinearLayout parentLinearLayout;
 
         public RecyclerListViewHolder(View itemView) {
             super(itemView);
+            parentLinearLayout = itemView.findViewById(R.id.parentLinearLayout);
             currencyPairCodetextView_textView = (TextView)itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView)itemView.findViewById(R.id.bid);
             ask_textView = (TextView)itemView.findViewById(R.id.ask);
@@ -134,12 +139,13 @@ public class MainActivity extends AppCompatActivity {
             high_textView = (TextView)itemView.findViewById(R.id.high);
             low_textView = (TextView)itemView.findViewById(R.id.low);
             currency_image_view = (ImageView)itemView.findViewById(R.id.currency_image_view);
+            yajirusi_view = (ImageView)itemView.findViewById(R.id.yajirusi_view);
         }
     }
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
-        CopyOnWriteArrayList<gaitameDataBox> _listData;
+        ArrayList<gaitameDataBox> _listData;
 
-        public RecyclerListAdapter(CopyOnWriteArrayList<gaitameDataBox> listData) {
+        public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
             _listData = listData;
         }
 
@@ -153,13 +159,15 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
             gaitameDataBox item = _listData.get(i);
             if (_listData != null && _listData.size() > i && item != null) {
+                holder.parentLinearLayout.setBackgroundColor(item.getBackGroundColor());
                 holder.currencyPairCodetextView_textView.setText(item.getCurrencyPairCode());
                 holder.bid_textView.setText(item.getBid());
                 holder.ask_textView.setText(item.getAsk());
                 holder.open_textView.setText(item.getOpen());
                 holder.high_textView.setText(item.getHigh());
                 holder.low_textView.setText(item.getLow());
-                holder.currency_image_view.setImageDrawable(item.getImage());
+                holder.currency_image_view.setImageDrawable(item.getFlag_image());
+                holder.yajirusi_view.setImageDrawable(item.getYajirushi_image());
             }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -204,36 +212,37 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public synchronized void onPostExecute(String result){
             try{
-                //ArrayList<String> ArraysCopied= new ArrayList<>();
-                CopyOnWriteArrayList<gaitameDataBox> ArraysCopied = new CopyOnWriteArrayList<>();
+                ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
                 if (adapter != null) {
                     position = mLinearLayoutManager.findFirstVisibleItemPosition();
                     View v = recycleview.getChildAt(0);
                      y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
                     //listData_clone.clear();ArraysCopied.clear();
-
                     for (gaitameDataBox comB : listData){
+                        gaitameDataBox clone=comB.clone();
                         ArraysCopied.add(new gaitameDataBox(
-                            (comB.clone()).getCurrencyPairCode(),
-                            (comB.clone()).getOpen(),
-                            (comB.clone()).getHigh(),
-                            (comB.clone()).getLow(),
-                            (comB.clone()).getBid(),
-                            comB.clone().getAsk()
+                            clone.getCurrencyPairCode(),clone.getOpen(),
+                            clone.getHigh(),clone.getLow(),clone.getBid(),clone.getAsk()
                         ));
                     }
-
-                    //Log .d("JSONObject", ArraysCopied.get(1).getBid());
-                    listData.clear();
-                    Log .d("JSONObject", ArraysCopied.get(1).getBid());
-                    //TextView text1 = (TextView)(((RecyclerView)findViewById(R.id.lvCityList)).getChildAt(23)).findViewById(R.id.ask);
-
+                    listData=null;
                 }
-                jsonToListData(result);
-                for(int i=0;i<24;i++){
+                listData = jsonToListData(result);
+                for(int i=0;i<listData.size();i++){
+                    if (!ArraysCopied.isEmpty()){
+                        //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
+                        if (Double.valueOf(ArraysCopied.get(i).getBid()) < Double.valueOf(listData.get(i).getBid())){
+                            listData.get(i).setBackGroundColor(R.color.colorpink);
+                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
+                        }else if(Double.valueOf(ArraysCopied.get(i).getBid()) > Double.valueOf(listData.get(i).getBid())){
+                            listData.get(i).setBackGroundColor(R.color.colorblue);
+                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
+                        }else{
+                            listData.get(i).setBackGroundColor(android.R.color.white);
+                            listData.get(i).setYajirushi_image(null);
+                        }
 
-                    Log .d("JSONObject", String.valueOf(listData.get(i).getBid().equals(ArraysCopied.get(i).getBid())));
-                    //listData.get(i).getBid().equals(ArraysCopied.get(i).getBid());
+                    }
                 }
 
                 if(adapter==null){
@@ -245,29 +254,25 @@ public class MainActivity extends AppCompatActivity {
                 mLinearLayoutManager.scrollToPositionWithOffset(position, y);
             }catch(Exception ex) {ex.printStackTrace();}
         }
-    private synchronized void jsonToListData(String result) throws JSONException{
+    private synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
+        ArrayList<gaitameDataBox> listdata = new ArrayList<>();
         JSONObject rootJSON = new JSONObject(result);
         //Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
         for(int i=0;i<24;i++) {
             //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
-            String currencyPairCode = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("currencyPairCode");
-            String open = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("open");
-            String high = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("high");
-            String low = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("low");
-            String bid = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("bid");
-            String ask = rootJSON.getJSONArray("quotes").getJSONObject(i).getString("ask");
-            gaitameDataBox gaitame =new gaitameDataBox(currencyPairCode,"Open: " + open,"High: " + high,"Low: " + low,"Bid: " + bid,"Ask: " + ask);
-            /*
-            gaitameDataBox gaitame = new gaitameDataBox();
-            gaitame.setCurrencyPairCode(currencyPairCode);
-            gaitame.setOpen("Open: " + open);gaitame.setHigh("High: " + high);
-            gaitame.setLow("Low: " + low);gaitame.setBid("Bid: " + bid);
-            gaitame.setAsk("Ask: " + ask);
-            */
-            gaitame.setImage(get_image_res(currencyPairCode));
-            listData.add(gaitame.clone());
+            JSONObject jsn = rootJSON.getJSONArray("quotes").getJSONObject(i);
+            String currencyPairCode = jsn.getString("currencyPairCode");
+            String open = jsn.getString("open");
+            String high = jsn.getString("high");
+            String low = jsn.getString("low");
+            String bid = jsn.getString("bid");
+            String ask = jsn.getString("ask");
+            gaitameDataBox gaitame =new gaitameDataBox(currencyPairCode, open, high, low, bid, ask);
+            gaitame.setFlag_image(get_image_res(currencyPairCode));
+            listdata.add(gaitame);
             //Log.d("JSONObject",currencyPairCode+" "+ open+" "+high+" "+low+" "+bid+" "+ask);
         }
+        return listdata;
     }
     private String is2String(InputStream is) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
