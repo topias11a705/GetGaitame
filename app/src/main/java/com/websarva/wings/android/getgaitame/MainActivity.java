@@ -123,10 +123,11 @@ public class MainActivity extends AppCompatActivity {
     //***************************************************************************************************
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
-        ImageView currency_image_view,yajirusi_view; LinearLayout parentLinearLayout;
+        ImageView currency_image_view,yajirusi_view; LinearLayout parentLinearLayout; RecyclerView recyclerView_;
 
         public RecyclerListViewHolder(View itemView) {
             super(itemView);
+            recyclerView_ = itemView.findViewById(R.id.lvCityList);
             parentLinearLayout = itemView.findViewById(R.id.parentLinearLayout);
             currencyPairCodetextView_textView = (TextView)itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView)itemView.findViewById(R.id.bid);
@@ -164,12 +165,18 @@ public class MainActivity extends AppCompatActivity {
                 holder.currency_image_view.setImageDrawable(item.getFlag_image());
                 holder.yajirusi_view.setImageDrawable(item.getYajirushi_image());
             }
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
+            /*
+            ((RecyclerView)holder.itemView).setOnFlingListener(new RecyclerView.OnFlingListener() {
                 @Override
-                public void onClick(View v) {
-                    Toast.makeText(contex1, "クリック", Toast.LENGTH_SHORT).show();
-                }
-            });
+                public boolean onFling(int velocityX, int velocityY){return true;}
+            });*/
+            holder.recyclerView_.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+
+                    }
+                })
+            );
         }
 
         @Override
@@ -227,11 +234,11 @@ public class MainActivity extends AppCompatActivity {
                     if (!ArraysCopied.isEmpty()){
                         //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
                         if (Double.valueOf(ArraysCopied.get(i).getBid()) < Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(R.color.colorpink);
-                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
+                            listData.get(i).setBackGroundColor(android.R.color.holo_red_light);
+                            //listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
                         }else if(Double.valueOf(ArraysCopied.get(i).getBid()) > Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(R.color.colorblue);
-                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
+                            listData.get(i).setBackGroundColor(android.R.color.holo_blue_light);
+                            //listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
                         }else{
                             listData.get(i).setBackGroundColor(android.R.color.white);
                             listData.get(i).setYajirushi_image(null);
