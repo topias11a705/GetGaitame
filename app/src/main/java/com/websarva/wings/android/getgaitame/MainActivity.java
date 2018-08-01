@@ -81,7 +81,13 @@ public class MainActivity extends AppCompatActivity {
         mLinearLayoutManager= new LinearLayoutManager(MainActivity.this);
         recycleview.setLayoutManager(mLinearLayoutManager);
         recycleview.addItemDecoration(new DividerItemDecoration(MainActivity.this, mLinearLayoutManager.getOrientation()));
+        recycleview.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
 
+                    }
+                })
+        );
         toolbar.inflateMenu(R.menu.menu);
         try{mTimer.schedule(mTimerTask, 0, 999);}
         catch(Exception e){System.out.print(e);}
@@ -169,14 +175,14 @@ public class MainActivity extends AppCompatActivity {
             ((RecyclerView)holder.itemView).setOnFlingListener(new RecyclerView.OnFlingListener() {
                 @Override
                 public boolean onFling(int velocityX, int velocityY){return true;}
-            });*/
+            });
             holder.recyclerView_.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
 
                     }
                 })
-            );
+            );*/
         }
 
         @Override
@@ -260,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
                                 public boolean onMove(RecyclerView recyclerView,RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                                     final int fromPos = viewHolder.getAdapterPosition();
                                     final int toPos = target.getAdapterPosition();
+
                                     adapter.notifyItemMoved(fromPos, toPos);
                                     Log.d("Event", "onMove");
                                     return true;// true if moved, false otherwise
@@ -276,8 +283,10 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
                                     super.onSelectedChanged(viewHolder, actionState);
+                                    stopGetGaitame();
                                     if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) viewHolder.itemView.setVisibility(View.VISIBLE);
                                     Log.d("Event", "onSelectedChanged");
+
                                 }
                                 //選択が終わった時（Dragが終わった時など）の処理を指定します
                                 //今回はアイテムをDropした際にcontainerViewを非表示にして通常表示に戻しています
@@ -356,21 +365,26 @@ public class MainActivity extends AppCompatActivity {
         }
         return drawable;
     }
-    public void stopGetGaitame(){
-        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
-        menu_flag = true;
-        mTimer.cancel();
-        mTimer = null;
-        Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+    public  void stopGetGaitame(){
+        if(mTimer!=null){
+            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
+            menu_flag = true;
+            mTimer.cancel();
+            mTimer = null;
+            Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+        }
+
     }
-    public void restartGetGaitame(){
-        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
-        menu_flag = false;
-        mTimer = new Timer();
-        mTimerTask = new MainTimerTask();
-        mHandler = new Handler();
-        mTimer.schedule(mTimerTask, 0, 999);
-        Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+    public  void restartGetGaitame(){
+        if(mTimer==null) {
+            ((Toolbar) findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
+            menu_flag = false;
+            mTimer = new Timer();
+            mTimerTask = new MainTimerTask();
+            mHandler = new Handler();
+            mTimer.schedule(mTimerTask, 0, 999);
+            Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+        }
     }
     private class ItemClickListener implements View.OnClickListener {
         @Override
