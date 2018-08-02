@@ -7,8 +7,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
-
+public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener{
     GestureDetector mGestureDetector;
     private OnItemClickListener mListener;
 
@@ -18,63 +17,63 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
             @Override
             public boolean onDoubleTap(MotionEvent e) {
 
-                Log.v("Gesture", "onDoubleTap");
+                Log.v("GestureLitener", "onDoubleTap");
                 return super.onDoubleTap(e);
             }
 
             @Override
             public boolean onDoubleTapEvent(MotionEvent e) {
 
-                Log.v("Gesture", "onDoubleTapEvent");
+                Log.v("GestureLitener", "onDoubleTapEvent");
                 return super.onDoubleTapEvent(e);
             }
 
             @Override
             public boolean onDown(MotionEvent e) {
 
-                Log.v("Gesture", "onDown");
+                Log.v("GestureLitener", "onDown");
                 return super.onDown(e);
             }
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,float velocityY) {
 
-                Log.v("Gesture", "onFling");
+                Log.v("GestureLitener", "onFling");
                 return super.onFling(e1, e2, velocityX, velocityY);
             }
 
             @Override
             public void onLongPress(MotionEvent e) {
 
-                Log.v("Gesture", "onLongPress");
+                Log.v("GestureLitener", "onLongPress");
                 super.onLongPress(e);
             }
 
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
-                Log.v("Gesture", "onScroll");
+                Log.v("GestureLitener", "onScroll");
                 return super.onScroll(e1, e2, distanceX, distanceY);
             }
 
             @Override
             public void onShowPress(MotionEvent e) {
 
-                Log.v("Gesture", "onShowPress");
+                Log.v("GestureLitener", "onShowPress");
                 super.onShowPress(e);
             }
 
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
 
-                Log.v("Gesture", "onSingleTapConfirmed");
+                Log.v("GestureLitener", "onSingleTapConfirmed");
                 return super.onSingleTapConfirmed(e);
             }
 
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
 
-                Log.v("Gesture", "onSingleTapUp");
+                Log.v("GestureLitener", "onSingleTapUp");
                 return super.onSingleTapUp(e);
             }
         });
@@ -86,8 +85,9 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
         if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
             // onInterceptTouchEventのタイミングだとアイテムのtouch feedbackがつく前にonItemClickが呼ばれてしまうので、明示的にsetPressed(true)を呼んでいます。
             childView.setPressed(true);
-            mListener.onItemClick(childView, view.getChildPosition(childView));
+            mListener.onItemClick(childView, view. getChildAdapterPosition(childView));
         }
+        Log.v("GestureLitener", "onInterceptTouchEvent!!!");
         return false;
     }
     @Override

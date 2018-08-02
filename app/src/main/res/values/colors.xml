@@ -3,4 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <!-- 既読時の背景色（薄水色）-->
+    <color name="colorpink">#ff6347</color>
+
+    <!-- 未読時の背景色（白色） -->
+    <color name="colorblue">#87ceeb</color>
 </resources>

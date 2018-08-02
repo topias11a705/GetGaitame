@@ -1,9 +1,12 @@
 package com.websarva.wings.android.getgaitame;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,13 +17,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,24 +49,25 @@ import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
-    RecyclerView recycleview; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
-    Timer mTimer = new Timer();
+    static RecyclerView recycleview= null; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
+
+    static Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
-    Handler mHandler = new Handler();
-    boolean menu_flag = true;
-    boolean recycleHelper_flag = true;
+    static Handler mHandler = new Handler();
+    static boolean menu_flag = true;
+    static boolean recycleHelper_flag = true;
+    static boolean excute_flag = true;
     Context contex1;Context contex2;
     int position = 0; int y = 0;
     RecyclerListAdapter adapter=null;
-    GestureDetector gd;
-    private int pref_browser_gesturevelo = 350;
 
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
@@ -73,34 +80,37 @@ public class MainActivity extends AppCompatActivity {
 
         CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
         recycleview = findViewById(R.id.lvCityList);
-
-        //RecyclerViewにレイアウトマネージャーとしてLinearLayoutManagerを設定。
-        //以下は他の2種のレイアウトマネージャー。
-//		new GridLayoutManager(MainActivity.this, 5);
-//		new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
         mLinearLayoutManager= new LinearLayoutManager(MainActivity.this);
         recycleview.setLayoutManager(mLinearLayoutManager);
         recycleview.addItemDecoration(new DividerItemDecoration(MainActivity.this, mLinearLayoutManager.getOrientation()));
-        recycleview.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
 
-                    }
-                })
-        );
+        recycleview.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override  public void onItemClick(View view, int position) {Log.d("MOTIONLitener", "OnItemClickListener onItemClick");}
+            }));
+ /*
+        recycleview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                Log.d("MOTIONLitener", "onInterceptTouchEvent");
+                return false;}
+            @Override public void onTouchEvent(RecyclerView rv, MotionEvent e) {Log.d("MOTIONLitener", "onTouchEvent");
+                ((MyRecyclerView)recycleview).onTouchEvent(e);
+            }
+            @Override  public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                Log.d("MOTIONLitener", "onRequestDisallowInterceptTouchEvent");}
+        });
+*/
+
         toolbar.inflateMenu(R.menu.menu);
-        try{mTimer.schedule(mTimerTask, 0, 999);}
+        try{mTimer.schedule(mTimerTask, 0, 2999);}
         catch(Exception e){System.out.print(e);}
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch(item.getItemId()){
                     case R.id.onoffButton:
-                        if(mTimer==null){
-                            restartGetGaitame();
-                        }else{
-                            stopGetGaitame();
-                        }
+                        excute_flag=!excute_flag;
+                        if(excute_flag){Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();}
+                        else{Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();}
                         break;
                 }
                 return true;
@@ -171,18 +181,6 @@ public class MainActivity extends AppCompatActivity {
                 holder.currency_image_view.setImageDrawable(item.getFlag_image());
                 holder.yajirusi_view.setImageDrawable(item.getYajirushi_image());
             }
-            /*
-            ((RecyclerView)holder.itemView).setOnFlingListener(new RecyclerView.OnFlingListener() {
-                @Override
-                public boolean onFling(int velocityX, int velocityY){return true;}
-            });
-            holder.recyclerView_.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-
-                    }
-                })
-            );*/
         }
 
         @Override
@@ -200,107 +198,114 @@ public class MainActivity extends AppCompatActivity {
         public synchronized String doInBackground(String... params) {
             String urlStr = "https://www.gaitameonline.com/rateaj/getrate";
             String result = "";
-            HttpURLConnection con = null;
-            try {
-                URL url = new URL(urlStr);
-                con = (HttpURLConnection)url.openConnection();
-                con.setRequestMethod("GET");
-                con.connect();
-                result = is2String(con.getInputStream());
-            }catch(MalformedURLException ex) {
-                System.out.print(ex);
-            }catch(IOException ex) {
-                System.out.print(ex);
-            }finally {
-                if(con != null) {con.disconnect();}
+            if(excute_flag){
+                HttpURLConnection con = null;
+                try {
+                    URL url = new URL(urlStr);
+                    con = (HttpURLConnection)url.openConnection();
+                    con.setRequestMethod("GET");
+                    con.connect();
+                    result = is2String(con.getInputStream());
+                }catch(MalformedURLException ex) {
+                    System.out.print(ex);
+                }catch(IOException ex) {
+                    System.out.print(ex);
+                }finally {
+                    if(con != null) {con.disconnect();}
+                }
             }
             return result;
         }
 
         @Override
         public synchronized void onPostExecute(String result){
-            try{
-                ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
-                if (adapter != null) {
-                    position = mLinearLayoutManager.findFirstVisibleItemPosition();
-                    View v = recycleview.getChildAt(0);
-                     y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
-                    //listData_clone.clear();ArraysCopied.clear();
-                    for (gaitameDataBox comB : listData){
-                        gaitameDataBox clone=comB.clone();
-                        ArraysCopied.add(new gaitameDataBox(
-                            clone.getCurrencyPairCode(),clone.getOpen(),
-                            clone.getHigh(),clone.getLow(),clone.getBid(),clone.getAsk()
-                        ));
-                    }
-                    listData=null;
-                }
-                listData = jsonToListData(result);
-                for(int i=0;i<listData.size();i++){
-                    if (!ArraysCopied.isEmpty()){
-                        //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
-                        if (Double.valueOf(ArraysCopied.get(i).getBid()) < Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(android.R.color.holo_red_light);
-                            //listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
-                        }else if(Double.valueOf(ArraysCopied.get(i).getBid()) > Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(android.R.color.holo_blue_light);
-                            //listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
-                        }else{
-                            listData.get(i).setBackGroundColor(android.R.color.white);
-                            listData.get(i).setYajirushi_image(null);
+            if(excute_flag) {
+                try {
+                    ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
+                    if (adapter != null) {
+                        position = mLinearLayoutManager.findFirstVisibleItemPosition();
+                        View v = recycleview.getChildAt(0);
+                        y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
+                        //listData_clone.clear();ArraysCopied.clear();
+                        for (gaitameDataBox comB : listData) {
+                            gaitameDataBox clone = comB.clone();
+                            ArraysCopied.add(new gaitameDataBox(
+                                    clone.getCurrencyPairCode(), clone.getOpen(),
+                                    clone.getHigh(), clone.getLow(), clone.getBid(), clone.getAsk()
+                            ));
                         }
-
+                        listData = null;
                     }
-                }
-                if(adapter==null){
-                    adapter = new RecyclerListAdapter(listData);
-                }else{
-                    adapter._listData=listData;
-                }
-                recycleview.setAdapter(adapter);
-                mLinearLayoutManager.scrollToPositionWithOffset(position, y);
-                if(recycleHelper_flag){
-                    ItemTouchHelper mIth  = new ItemTouchHelper(
-                            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP |
-                                    ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
-                                public boolean onMove(RecyclerView recyclerView,RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    final int toPos = target.getAdapterPosition();
+                    listData = jsonToListData(result);
+                    for (int i = 0; i < listData.size(); i++) {
+                        if (!ArraysCopied.isEmpty()) {
+                            //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
+                            if (Double.valueOf(ArraysCopied.get(i).getBid()) < Double.valueOf(listData.get(i).getBid())) {
+                                listData.get(i).setBackGroundColor(android.R.color.holo_red_light);
+                                listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
+                            } else if (Double.valueOf(ArraysCopied.get(i).getBid()) > Double.valueOf(listData.get(i).getBid())) {
+                                listData.get(i).setBackGroundColor(android.R.color.holo_blue_light);
+                                listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
+                            } else {
+                                listData.get(i).setBackGroundColor(android.R.color.white);
+                                listData.get(i).setYajirushi_image(null);
+                            }
+                        }
+                    }
+                    if (adapter == null) {
+                        adapter = new RecyclerListAdapter(listData);
+                    } else {
+                        adapter._listData = listData;
+                    }
+                    recycleview.setAdapter(adapter);
+                    mLinearLayoutManager.scrollToPositionWithOffset(position, y);
 
-                                    adapter.notifyItemMoved(fromPos, toPos);
-                                    Log.d("Event", "onMove");
-                                    return true;// true if moved, false otherwise
-                                }
-                                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    listData.remove(fromPos);
-                                    adapter.notifyItemRemoved(fromPos);
-                                    Log.d("Event", "onSwiped");
-                                }
-                                //選択ステータスが変更された場合の処理を指定します
-                                //この例ではAdapterView内のcontainerViewを表示にしています
-                                //containerViewには背景色を指定しており、ドラッグが開始された際に見やすくなるようにしています
-                                @Override
-                                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-                                    super.onSelectedChanged(viewHolder, actionState);
-                                    stopGetGaitame();
-                                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) viewHolder.itemView.setVisibility(View.VISIBLE);
-                                    Log.d("Event", "onSelectedChanged");
+                    if (recycleHelper_flag) {
+                        ItemTouchHelper mIth = new ItemTouchHelper(
+                                new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+                                    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                                        final int fromPos = viewHolder.getAdapterPosition();
+                                        final int toPos = target.getAdapterPosition();
+                                        adapter.notifyItemMoved(fromPos, toPos);
+                                        Log.d("ItemTouchHelperLitener", "onMove1");
+                                        return false;// true if moved, false otherwise
+                                    }
+                                    public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
+                                        //Log.d("ItemTouchHelperLitener", "onMoved");
+                                    }
+                                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                                        final int fromPos = viewHolder.getAdapterPosition();
+                                        listData.remove(fromPos);
+                                        adapter.notifyItemRemoved(fromPos);
+                                        Log.d("ItemTouchHelperLitener", "onSwiped");
+                                    }
+                                    //選択ステータスが変更された場合の処理を指定します
+                                    //この例ではAdapterView内のcontainerViewを表示にしています
+                                    //containerViewには背景色を指定しており、ドラッグが開始された際に見やすくなるようにしています
+                                    @Override
+                                    public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                                        super.onSelectedChanged(viewHolder, actionState);
+                                        if (actionState == ItemTouchHelper.ACTION_STATE_DRAG)
+                                            viewHolder.itemView.setVisibility(View.VISIBLE);
+                                        Log.d("ItemTouchHelperLitener", "onSelectedChanged");
 
-                                }
-                                //選択が終わった時（Dragが終わった時など）の処理を指定します
-                                //今回はアイテムをDropした際にcontainerViewを非表示にして通常表示に戻しています
-                                @Override
-                                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                                    super.clearView(recyclerView, viewHolder);
-                                    viewHolder.itemView.setVisibility(View.GONE);
-                                    Log.d("Event", "clearView");
-                                }
-                            });
-                    mIth .attachToRecyclerView(recycleview);
-                    recycleHelper_flag = false;
+                                    }
+                                    //選択が終わった時（Dragが終わった時など）の処理を指定します
+                                    //今回はアイテムをDropした際にcontainerViewを非表示にして通常表示に戻しています
+                                    @Override
+                                    public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                                        super.clearView(recyclerView, viewHolder);
+                                        viewHolder.itemView.setVisibility(View.GONE);
+                                        Log.d("ItemTouchHelperLitener", "clearView");
+                                    }
+                                });
+                        mIth.attachToRecyclerView(recycleview);
+                        recycleHelper_flag = false;
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
-            }catch(Exception ex) {ex.printStackTrace();}
+            }
         }
 
 
@@ -365,17 +370,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return drawable;
     }
-    public  void stopGetGaitame(){
-        if(mTimer!=null){
-            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
-            menu_flag = true;
-            mTimer.cancel();
-            mTimer = null;
-            Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
-        }
-
-    }
-    public  void restartGetGaitame(){
+    public void restartGetGaitame(){
         if(mTimer==null) {
             ((Toolbar) findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
             menu_flag = false;
@@ -383,14 +378,14 @@ public class MainActivity extends AppCompatActivity {
             mTimerTask = new MainTimerTask();
             mHandler = new Handler();
             mTimer.schedule(mTimerTask, 0, 999);
-            Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
         }
     }
-    private class ItemClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-
+    public void stopGetGaitame(){
+        if(mTimer!=null){
+            ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
+            menu_flag = true;
+            mTimer.cancel();
+            mTimer = null;
         }
     }
-
 }
