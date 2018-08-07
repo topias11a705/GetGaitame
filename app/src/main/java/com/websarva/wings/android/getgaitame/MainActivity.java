@@ -2,10 +2,11 @@ package com.websarva.wings.android.getgaitame;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,8 +22,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +44,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity  {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
     static RecyclerView recycleview= null; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
@@ -55,7 +58,6 @@ public class MainActivity extends AppCompatActivity{
     Context contex1;Context contex2;
     int position = 0; int y = 0;
     RecyclerListAdapter adapter=null;
-
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -88,6 +90,19 @@ public class MainActivity extends AppCompatActivity{
         });
 
         toolbar.inflateMenu(R.menu.menu);
+        //*********************************************************************************************
+        /*
+        final CompoundButton onoff_menu_switch = findViewById(R.id.onnOff_menubar_switch);
+        onoff_menu_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                excute_flag=isChecked;
+                if(excute_flag){Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();}
+                else{           Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();}
+            }
+        });
+        */
+        //********************************************************************************************
         try{mTimer.schedule(mTimerTask, 0, 1000);}
         catch(Exception e){System.out.print(e);}
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -99,11 +114,20 @@ public class MainActivity extends AppCompatActivity{
                         if(excute_flag){Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();}
                         else{           Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();}
                         break;
+                     /*
+                    case R.id.onnOff_menubar_switch:
+                        excute_flag=!excute_flag;
+
+                        if(excute_flag){onoff_menu_switch.setChecked(true); Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();}
+                        else{           onoff_menu_switch.setChecked(false);Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();}
+                        break;
+                     */
                 }
                 return true;
             }
         });
     }
+
     public class MainTimerTask extends TimerTask { //➀
         @Override
         public void run() { //②
@@ -145,13 +169,11 @@ public class MainActivity extends AppCompatActivity{
         public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
             _listData = listData;
         }
-
         @Override
         public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
         }
-
         @Override
         public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
             gaitameDataBox item = _listData.get(i);
@@ -171,20 +193,18 @@ public class MainActivity extends AppCompatActivity{
                 holder.low_yajirusi_view.setImageDrawable(item.getLow_yajirushi_image());
             }
         }
-
-        @Override
+        @Override//リストデータ中の件数をリターン。
         public int getItemCount() {
-            //リストデータ中の件数をリターン。
             if(_listData != null){return _listData.size();}
             else{return 0;}
         }
     }
     //***************************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
-        public WeatherInfoReceiver() {}
-
+        public WeatherInfoReceiver(){}
         @Override
         public synchronized String doInBackground(String... params) {
+            //*************************************************************
             String urlStr = "https://www.gaitameonline.com/rateaj/getrate";
             String result = "";
             if(excute_flag){
@@ -195,8 +215,7 @@ public class MainActivity extends AppCompatActivity{
                     con.setRequestMethod("GET");
                     con.connect();
                     result = is2String(con.getInputStream());
-
-            //*****************************************************************************************
+            //**************************************************************
                     ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
                     if (adapter != null) {
                         position = mLinearLayoutManager.findFirstVisibleItemPosition();
@@ -239,14 +258,14 @@ public class MainActivity extends AppCompatActivity{
                             else if(oldHigh>newHigh){newdata.setHigh_yajirushi_image(sitamuki);}
                             if     (oldLow < newLow){newdata.setLow_yajirushi_image(uemuki);}
                             else if(oldLow > newLow){newdata.setLow_yajirushi_image(sitamuki);}
-
-                            if(oldBit==newBit && oldAsk==newAsk ){
+                            if(oldBit==newBit && oldAsk==newAsk){
                                 newdata.setBackGroundColor(android.R.color.white);
                                 newdata.set_yajirushi_image_is_AllNull();
                             }
                         }
                     }
-
+                    if(adapter == null){adapter = new RecyclerListAdapter(listData);}
+                    else {adapter._listData = listData;}
                 }catch(Exception ex) {
                     ex.printStackTrace();
                 }finally {
@@ -255,57 +274,50 @@ public class MainActivity extends AppCompatActivity{
             }
             return result;
         }
-
-        @Override
+        @Override //UI(メイン)スレッド処理
         public synchronized void onPostExecute(String result){
             if(excute_flag) {
-                try {
-                    if(adapter == null){adapter = new RecyclerListAdapter(listData);}
-                    else {adapter._listData = listData;}
-                    recycleview.setAdapter(adapter);
-                    mLinearLayoutManager.scrollToPositionWithOffset(position, y);
+                recycleview.setAdapter(adapter);
+                mLinearLayoutManager.scrollToPositionWithOffset(position, y);
+                /*
+                if (recycleHelper_flag) {
+                    ItemTouchHelper mIth = new ItemTouchHelper(
+                        new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+                            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                                final int fromPos = viewHolder.getAdapterPosition();
+                                final int toPos = target.getAdapterPosition();
+                                adapter.notifyItemMoved(fromPos, toPos);
+                                Log.d("ItemTouchHelperLitener", "onMove1");
+                                return false;// true if moved, false otherwise
+                            }
+                            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
+                                Log.d("ItemTouchHelperLitener", "onMoved");
+                            }
+                            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                                final int fromPos = viewHolder.getAdapterPosition();
+                                listData.remove(fromPos);
+                                adapter.notifyItemRemoved(fromPos);
+                                Log.d("ItemTouchHelperLitener", "onSwiped");
+                            }
+                            @Override public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                                super.onSelectedChanged(viewHolder, actionState);
+                                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG)
+                                    viewHolder.itemView.setVisibility(View.VISIBLE);
+                                Log.d("ItemTouchHelperLitener", "onSelectedChanged");
 
-                    if (recycleHelper_flag) {
-                        ItemTouchHelper mIth = new ItemTouchHelper(
-                            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
-                                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    final int toPos = target.getAdapterPosition();
-                                    adapter.notifyItemMoved(fromPos, toPos);
-                                    Log.d("ItemTouchHelperLitener", "onMove1");
-                                    return false;// true if moved, false otherwise
-                                }
-                                public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
-                                    Log.d("ItemTouchHelperLitener", "onMoved");
-                                }
-                                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    listData.remove(fromPos);
-                                    adapter.notifyItemRemoved(fromPos);
-                                    Log.d("ItemTouchHelperLitener", "onSwiped");
-                                }
-                                @Override public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-                                    super.onSelectedChanged(viewHolder, actionState);
-                                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG)
-                                        viewHolder.itemView.setVisibility(View.VISIBLE);
-                                    Log.d("ItemTouchHelperLitener", "onSelectedChanged");
-
-                                }
-                                @Override public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                                    super.clearView(recyclerView, viewHolder);
-                                    viewHolder.itemView.setVisibility(View.GONE);
-                                    Log.d("ItemTouchHelperLitener", "clearView");
-                                }
-                            });
-                        mIth.attachToRecyclerView(recycleview);
-                        recycleHelper_flag = false;
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                            }
+                            @Override public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                                super.clearView(recyclerView, viewHolder);
+                                viewHolder.itemView.setVisibility(View.GONE);
+                                Log.d("ItemTouchHelperLitener", "clearView");
+                            }
+                        });
+                    mIth.attachToRecyclerView(recycleview);
+                    recycleHelper_flag = false;
                 }
+                */
             }
         }
-
     }
     private synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
         ArrayList<gaitameDataBox> listdata = new ArrayList<>();
