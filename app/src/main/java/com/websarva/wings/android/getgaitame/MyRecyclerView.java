@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * Created by am on 2018/08/02.
@@ -28,11 +29,6 @@ public class MyRecyclerView extends RecyclerView  implements ScrollingView, Nest
     public MyRecyclerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-    @Override
-    public void onDraw(Canvas canvas){
-        //canvas.drawColor(Color.BLACK);
-    }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -40,23 +36,26 @@ public class MyRecyclerView extends RecyclerView  implements ScrollingView, Nest
                 event.getEdgeFlags()+", ,getSize" + event.getSize()+ ", ,getEventTime" +event.getEventTime()+ ", ,getPressure" +event.getPressure());
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                //MainActivity.excute_flag=false;
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_DOWN");
-                break;
+
+                return true;//break;
             case MotionEvent.ACTION_UP:
-                //MainActivity.excute_flag=true;
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_UP");
-                break;
+
+                return true;//break;
+            /*
             case MotionEvent.ACTION_MOVE:
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_MOVE2");
-                break;
+                return false;//break;
             case MotionEvent.ACTION_CANCEL:
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_CANCEL");
-                break;
+                return false;//break;
             case MotionEvent.ACTION_OUTSIDE:
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_OUTSIDE");
-                break;
+                return true;//break;
+            */
         }
-        return true;
+        return false;
     }
+
 }

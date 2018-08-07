@@ -20,56 +20,48 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                 Log.v("GestureLitener", "onDoubleTap");
                 return super.onDoubleTap(e);
             }
-
             @Override
             public boolean onDoubleTapEvent(MotionEvent e) {
 
                 Log.v("GestureLitener", "onDoubleTapEvent");
                 return super.onDoubleTapEvent(e);
             }
-
             @Override
             public boolean onDown(MotionEvent e) {
 
                 Log.v("GestureLitener", "onDown");
                 return super.onDown(e);
             }
-
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,float velocityY) {
 
                 Log.v("GestureLitener", "onFling");
                 return super.onFling(e1, e2, velocityX, velocityY);
             }
-
             @Override
             public void onLongPress(MotionEvent e) {
 
                 Log.v("GestureLitener", "onLongPress");
                 super.onLongPress(e);
             }
-
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
                 Log.v("GestureLitener", "onScroll");
                 return super.onScroll(e1, e2, distanceX, distanceY);
             }
-
             @Override
             public void onShowPress(MotionEvent e) {
 
                 Log.v("GestureLitener", "onShowPress");
                 super.onShowPress(e);
             }
-
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
 
                 Log.v("GestureLitener", "onSingleTapConfirmed");
                 return super.onSingleTapConfirmed(e);
             }
-
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
 
