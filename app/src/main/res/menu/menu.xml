@@ -5,4 +5,11 @@
         android:id="@+id/onoffButton"
         android:title="ON/OFF"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/onnOff_menubar_switch"
+        android:text="ON/OFF"
+        android:title="ONOFF2"
+        app:showAsAction="always|withText"
+        app:actionLayout="@layout/switch_item"
+        android:checked="false"/>
 </menu>

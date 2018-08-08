@@ -1,10 +1,12 @@
 package com.websarva.wings.android.getgaitame;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Handler;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,19 +14,23 @@ import android.os.AsyncTask;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,82 +40,68 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
-    RecyclerView recycleview; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
+    static RecyclerView recycleview= null; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
+    SwitchCompat switchButton ;
+    ItemTouchHelper mIth;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
-    boolean menu_flag = true;
-    boolean recycleHelper_flag = true;
+    static boolean menu_flag = true;
+    static boolean recycleHelper_flag = true;
+    static boolean excute_flag = true;
+    static boolean config_mode_flag = false;
+    static boolean config_mode_hozon_flag = false;
     Context contex1;Context contex2;
     int position = 0; int y = 0;
     RecyclerListAdapter adapter=null;
-    GestureDetector gd;
-    private int pref_browser_gesturevelo = 350;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_main);
         imageView = findViewById(R.id.currency_image_view);
         contex1 = MainActivity.this; contex2 = getApplicationContext();
-
+        switchButton = findViewById(R.id.onnOff_menubar_switch);
         Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
         toolbar.setTitle(R.string.toolbar_title_on);
-        //setSupportActionBar(toolbar);
-
-        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
+        setSupportActionBar(toolbar);
+        //toolbar.inflateMenu(R.menu.menu);
+        //CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbarLayout);
         recycleview = findViewById(R.id.lvCityList);
-
-        //RecyclerViewにレイアウトマネージャーとしてLinearLayoutManagerを設定。
-        //以下は他の2種のレイアウトマネージャー。
-//		new GridLayoutManager(MainActivity.this, 5);
-//		new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
         mLinearLayoutManager= new LinearLayoutManager(MainActivity.this);
         recycleview.setLayoutManager(mLinearLayoutManager);
         recycleview.addItemDecoration(new DividerItemDecoration(MainActivity.this, mLinearLayoutManager.getOrientation()));
-
-        toolbar.inflateMenu(R.menu.menu);
-        try{mTimer.schedule(mTimerTask, 0, 999);}
-        catch(Exception e){System.out.print(e);}
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch(item.getItemId()){
-                    case R.id.onoffButton:
-                        if(mTimer==null){
-                            restartGetGaitame();
-                        }else{
-                            stopGetGaitame();
-                        }
-                        break;
-                }
-                return true;
+        recycleview.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override  public void onItemClick(View view, int position) {Log.d("MOTIONLitener", "OnItemClickListener onItemClick");}
+            }));
+        recycleview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                Log.d("MOTIONLitener", "onInterceptTouchEvent");
+                return false;}
+            @Override public void onTouchEvent(RecyclerView rv, MotionEvent e) {Log.d("MOTIONLitener", "onTouchEvent");
+                ((MyRecyclerView)recycleview).onTouchEvent(e);
             }
+            @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                Log.d("MOTIONLitener", "onRequestDisallowInterceptTouchEvent");}
         });
 
-
-    }
-    @Override
-    protected void onResume(){
-        super.onResume();
+        try{mTimer.schedule(mTimerTask, 0, 1500);}catch(Exception e){System.out.print(e);}
     }
     public class MainTimerTask extends TimerTask { //➀
         @Override
-        public void run() { //②
+        public void run() {
             mHandler.post(new Runnable() {  //④
                 @Override
                 public void run() {
@@ -119,14 +111,15 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
-
-    //***************************************************************************************************
+    //*******************************************************************************************
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
-        ImageView currency_image_view,yajirusi_view; LinearLayout parentLinearLayout;
+        ImageView currency_image_view, bit_yajirusi_view, ask_yajirusi_view, open_yajirusi_view, high_yajirusi_view, low_yajirusi_view;
+        LinearLayout parentLinearLayout; RecyclerView recyclerView_;
 
         public RecyclerListViewHolder(View itemView) {
             super(itemView);
+            recyclerView_ = itemView.findViewById(R.id.lvCityList);
             parentLinearLayout = itemView.findViewById(R.id.parentLinearLayout);
             currencyPairCodetextView_textView = (TextView)itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView)itemView.findViewById(R.id.bid);
@@ -135,7 +128,9 @@ public class MainActivity extends AppCompatActivity {
             high_textView = (TextView)itemView.findViewById(R.id.high);
             low_textView = (TextView)itemView.findViewById(R.id.low);
             currency_image_view = (ImageView)itemView.findViewById(R.id.currency_image_view);
-            yajirusi_view = (ImageView)itemView.findViewById(R.id.yajirusi_view);
+            bit_yajirusi_view = (ImageView)itemView.findViewById(R.id.bit_yajirusi_view);
+            ask_yajirusi_view = (ImageView)itemView.findViewById(R.id.ask_yajirusi_view);
+            //Log.d("color",(((TextView) itemView.findViewById(R.id.low)).getTextColors().toString()));
         }
     }
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
@@ -143,151 +138,203 @@ public class MainActivity extends AppCompatActivity {
         public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
             _listData = listData;
         }
-
         @Override
         public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
         }
-
         @Override
         public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
             gaitameDataBox item = _listData.get(i);
             if (_listData != null && _listData.size() > i && item != null) {
                 holder.parentLinearLayout.setBackgroundColor(item.getBackGroundColor());
+                holder.open_textView.setTextColor(Color.RED);
                 holder.currencyPairCodetextView_textView.setText(item.getCurrencyPairCode());
                 holder.bid_textView.setText(item.getBid());
                 holder.ask_textView.setText(item.getAsk());
                 holder.open_textView.setText(item.getOpen());
                 holder.high_textView.setText(item.getHigh());
                 holder.low_textView.setText(item.getLow());
+                holder.open_textView.setTextColor(item.getOpenTextColor());
+                holder.high_textView.setTextColor(item.getHighTextColor());
+                holder.low_textView.setTextColor(item.getLowTextColor());
                 holder.currency_image_view.setImageDrawable(item.getFlag_image());
-                holder.yajirusi_view.setImageDrawable(item.getYajirushi_image());
+                holder.bit_yajirusi_view.setImageDrawable(item.getBit_yajirushi_image());
+                holder.ask_yajirusi_view.setImageDrawable(item.getAsk_yajirushi_image());
             }
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(contex1, "クリック", Toast.LENGTH_SHORT).show();
-                }
-            });
         }
-
-        @Override
+        @Override//リストデータ中の件数をリターン。
         public int getItemCount() {
-            //リストデータ中の件数をリターン。
             if(_listData != null){return _listData.size();}
             else{return 0;}
         }
     }
-    //***************************************************************************************************
+    //*******************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
-        public WeatherInfoReceiver() {}
-
+        public WeatherInfoReceiver(){}
         @Override
         public synchronized String doInBackground(String... params) {
+            //*************************************************************
             String urlStr = "https://www.gaitameonline.com/rateaj/getrate";
             String result = "";
-            HttpURLConnection con = null;
-            try {
-                URL url = new URL(urlStr);
-                con = (HttpURLConnection)url.openConnection();
-                con.setRequestMethod("GET");
-                con.connect();
-                result = is2String(con.getInputStream());
-            }catch(MalformedURLException ex) {
-                System.out.print(ex);
-            }catch(IOException ex) {
-                System.out.print(ex);
-            }finally {
-                if(con != null) {con.disconnect();}
+            if(excute_flag){
+                HttpURLConnection con = null;
+                try {
+                    URL url = new URL(urlStr);
+                    con = (HttpURLConnection)url.openConnection();
+                    con.setRequestMethod("GET");
+                    con.connect();
+                    result = is2String(con.getInputStream());
+            //**************************************************************
+                    ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
+                    if (adapter != null) {
+                        position = mLinearLayoutManager.findFirstVisibleItemPosition();
+                        View v = recycleview.getChildAt(0);
+                        y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
+                        //listData_clone.clear();ArraysCopied.clear();
+                        for (gaitameDataBox comB : listData) {
+                            gaitameDataBox clone = comB.clone();
+                            ArraysCopied.add(new gaitameDataBox(
+                                    clone.getCurrencyPairCode(), clone.getOpen(), clone.getHigh(), clone.getLow(), clone.getBid(), clone.getAsk()
+                            ));
+                        }
+                        listData = null;
+                    }
+                    listData = jsonToListData(result);
+                    for (int i = 0; i < listData.size(); i++) {
+                        if (!ArraysCopied.isEmpty()){
+                            //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
+                            gaitameDataBox newdata = listData.get(i); gaitameDataBox olddata = ArraysCopied.get(i);
+                            double oldBit,newBit,oldAsk,newAsk,oldOpen,newOpen,oldHigh,newHigh,oldLow,newLow;
+                            oldBit  = Double.valueOf(olddata.getBid());  newBit  = Double.valueOf(newdata.getBid());
+                            oldAsk  = Double.valueOf(olddata.getAsk());  newAsk  = Double.valueOf(newdata.getAsk());
+                            oldOpen = Double.valueOf(olddata.getOpen()); newOpen = Double.valueOf(newdata.getOpen());
+                            oldHigh = Double.valueOf(olddata.getHigh()); newHigh = Double.valueOf(newdata.getHigh());
+                            oldLow  = Double.valueOf(olddata.getLow());  newLow  = Double.valueOf(newdata.getLow());
+                            Drawable uemuki = getResources().getDrawable(R.drawable.uemuki);
+                            Drawable sitamuki = getResources().getDrawable(R.drawable.sitamuki);
+                            if     (oldBit < newBit){newdata.setBit_yajirushi_image(uemuki);newdata.setBackGroundColor(Color.rgb(244, 150, 206));}
+                            else if(oldBit > newBit){newdata.setBit_yajirushi_image(sitamuki);newdata.setBackGroundColor(Color.rgb(141, 172, 239));}
+                            if     (oldAsk < newAsk){newdata.setAsk_yajirushi_image(uemuki);}
+                            else if(oldAsk > newAsk){newdata.setAsk_yajirushi_image(sitamuki);}
+                            if     (oldOpen!=newOpen){newdata.setOpenTextColor(Color.RED);}else{newdata.setOpenTextColor(-1979711488);}
+                            if     (oldHigh!=newHigh){newdata.setHighTextColor(Color.RED);}else{newdata.setHighTextColor(-1979711488);}
+                            if     (oldLow != newLow){ newdata.setLowTextColor(Color.RED);}else{ newdata.setLowTextColor(-1979711488);}
+                            if(oldBit==newBit && oldAsk==newAsk && oldOpen==newOpen && oldHigh==newHigh && oldLow==newLow){ newdata.setAllReset(); }
+                        }
+                    }
+                }catch(Exception ex) {
+                    ex.printStackTrace();
+                }finally {
+                    if(con!=null){con.disconnect();}
+                }
             }
             return result;
         }
-
-        @Override
+        @Override //UI(メイン)スレッド処理
         public synchronized void onPostExecute(String result){
-            try{
-                ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
-                if (adapter != null) {
-                    position = mLinearLayoutManager.findFirstVisibleItemPosition();
-                    View v = recycleview.getChildAt(0);
-                     y = (v == null) ? 0 : (v.getTop() - v.getPaddingTop());
-                    //listData_clone.clear();ArraysCopied.clear();
-                    for (gaitameDataBox comB : listData){
-                        gaitameDataBox clone=comB.clone();
-                        ArraysCopied.add(new gaitameDataBox(
-                            clone.getCurrencyPairCode(),clone.getOpen(),
-                            clone.getHigh(),clone.getLow(),clone.getBid(),clone.getAsk()
-                        ));
+            if(excute_flag) {
+                if (recycleHelper_flag) {
+                    switchButton = findViewById(R.id.onnOff_menubar_switch);
+                    if(switchButton != null){
+                        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                excute_flag = isChecked;
+                                if (isChecked) {
+                                    Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+                                    for(gaitameDataBox data : listData){ data.setAllReset(); }
+                                }
+                            }
+                        });
                     }
-                    listData=null;
-                }
-                listData = jsonToListData(result);
-                for(int i=0;i<listData.size();i++){
-                    if (!ArraysCopied.isEmpty()){
-                        //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
-                        if (Double.valueOf(ArraysCopied.get(i).getBid()) < Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(R.color.colorpink);
-                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.uemuki));
-                        }else if(Double.valueOf(ArraysCopied.get(i).getBid()) > Double.valueOf(listData.get(i).getBid())){
-                            listData.get(i).setBackGroundColor(R.color.colorblue);
-                            listData.get(i).setYajirushi_image(getResources().getDrawable(R.drawable.sitamuki));
-                        }else{
-                            listData.get(i).setBackGroundColor(android.R.color.white);
-                            listData.get(i).setYajirushi_image(null);
-                        }
-
-                    }
-                }
-                if(adapter==null){
-                    adapter = new RecyclerListAdapter(listData);
-                }else{
-                    adapter._listData=listData;
-                }
-                recycleview.setAdapter(adapter);
-                mLinearLayoutManager.scrollToPositionWithOffset(position, y);
-                if(recycleHelper_flag){
-                    ItemTouchHelper mIth  = new ItemTouchHelper(
-                            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP |
-                                    ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
-                                public boolean onMove(RecyclerView recyclerView,RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    final int toPos = target.getAdapterPosition();
-                                    adapter.notifyItemMoved(fromPos, toPos);
-                                    Log.d("Event", "onMove");
-                                    return true;// true if moved, false otherwise
-                                }
-                                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                                    final int fromPos = viewHolder.getAdapterPosition();
-                                    listData.remove(fromPos);
-                                    adapter.notifyItemRemoved(fromPos);
-                                    Log.d("Event", "onSwiped");
-                                }
-                                //選択ステータスが変更された場合の処理を指定します
-                                //この例ではAdapterView内のcontainerViewを表示にしています
-                                //containerViewには背景色を指定しており、ドラッグが開始された際に見やすくなるようにしています
-                                @Override
-                                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-                                    super.onSelectedChanged(viewHolder, actionState);
-                                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) viewHolder.itemView.setVisibility(View.VISIBLE);
-                                    Log.d("Event", "onSelectedChanged");
-                                }
-                                //選択が終わった時（Dragが終わった時など）の処理を指定します
-                                //今回はアイテムをDropした際にcontainerViewを非表示にして通常表示に戻しています
-                                @Override
-                                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                                    super.clearView(recyclerView, viewHolder);
-                                    viewHolder.itemView.setVisibility(View.GONE);
-                                    Log.d("Event", "clearView");
-                                }
-                            });
-                    mIth .attachToRecyclerView(recycleview);
                     recycleHelper_flag = false;
                 }
-            }catch(Exception ex) {ex.printStackTrace();}
+                if(adapter == null){adapter = new RecyclerListAdapter(listData);}else{adapter._listData = listData;}
+                recycleview.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                mLinearLayoutManager.scrollToPositionWithOffset(position, y);
+            }
         }
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            //todo 同一Activityのままではなくて設定用別Activityを作る
+            //todo 設定モード中は設定モードであることがユーザーに分かりやすいように何かする(ビジュアルでか、テキストで直接的にするか)
+            case R.id.configMode:
+                switchButton = findViewById(R.id.onnOff_menubar_switch);
+                if(!config_mode_flag){//設定モードじゃないなら設定モードにする
+                    config_mode_flag = true;//設定モードをONにする
+                    if(switchButton.isChecked()){//ボタンのチェックがTRUEならFALSEにして不使用化する
+                        switchButton.setChecked(false);
+                        config_mode_hozon_flag =true;
+                    }else{
+                        config_mode_hozon_flag =false;
+                    }
+                    switchButton.setEnabled(false);
 
+                    mIth = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+                        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                            final int fromPos = viewHolder.getAdapterPosition();
+                            final int toPos = target.getAdapterPosition();
+                            adapter.notifyItemMoved(fromPos, toPos);
+                            Log.d("ItemTouchHelperLitener", "onMove1");
+                            return false;// true if moved, false otherwise
+                        }
+                        public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
+                            Log.d("ItemTouchHelperLitener", "onMoved");
+                        }
+                        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                            final int fromPos = viewHolder.getAdapterPosition();
+                            listData.remove(fromPos);
+                            adapter.notifyItemRemoved(fromPos);
+                            Log.d("ItemTouchHelperLitener", "onSwiped");
+                        }
+                        @Override public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                            super.onSelectedChanged(viewHolder, actionState);
+                            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG)
+                                viewHolder.itemView.setVisibility(View.VISIBLE);
+                            Log.d("ItemTouchHelperLitener", "onSelectedChanged");
+
+                        }
+                        @Override public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                            super.clearView(recyclerView, viewHolder);
+                            viewHolder.itemView.setVisibility(View.GONE);
+                            Log.d("ItemTouchHelperLitener", "clearView");
+                        }
+                    });
+                    mIth.attachToRecyclerView(recycleview);
+                }else{//設定モード中なら元に戻す
+                    config_mode_flag = false;//設定モードをOFFにする。
+                    //***Listener消せない****
+                    Log.d("getItemDecorationCount",String.valueOf(recycleview.getItemDecorationCount()));
+                    recycleview.removeItemDecoration(mIth);
+
+                    mIth = null;
+                    //***********************
+                    switchButton.setEnabled(true);//不使用状態を解除
+                    if(config_mode_hozon_flag){//戻したときの実行は設定モードに入る直前の時と同じにする。
+                        switchButton.setChecked(true);
+                    }else{
+                        switchButton.setChecked(false);
+                    }
+
+                }
+                break;
+            /*
+            case R.id.onnOff_menubar_switch_item:
+                break;
+            */
+        }
+        return super.onOptionsItemSelected(item);
     }
     private synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
         ArrayList<gaitameDataBox> listdata = new ArrayList<>();
@@ -349,27 +396,17 @@ public class MainActivity extends AppCompatActivity {
         }
         return drawable;
     }
-    public void stopGetGaitame(){
-        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_off);
-        menu_flag = true;
-        mTimer.cancel();
-        mTimer = null;
-        Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
-    }
-    public void restartGetGaitame(){
-        ((Toolbar)findViewById(R.id.tool_bar)).setTitle(R.string.toolbar_title_on);
-        menu_flag = false;
-        mTimer = new Timer();
-        mTimerTask = new MainTimerTask();
-        mHandler = new Handler();
-        mTimer.schedule(mTimerTask, 0, 999);
-        Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
-    }
-    private class ItemClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-
-        }
-    }
-
 }
+/*
+TODO: アプリがResumeしたときに為替取得を止める
+TODO:順番を任意で入れ替えられるようにする
+TODO:タップしたときの処理
+TODO:サービスを使ってバックグラウンドで為替の通知表示
+TODO:編集タブで表示数や表示順を設定保存できるようにする
+TODO:データベースを使用しユーザー登録できるようにする
+TODO データ更新時には変更部分だけを更新するようにして動作を早くさせる
+TODO getRecycledViewPoolが再利用の仕組みを提供している可能性があるので使用検討する　
+https://developer.android.com/reference/android/support/v7/widget/RecyclerView.RecycledViewPool
+
+*/
+

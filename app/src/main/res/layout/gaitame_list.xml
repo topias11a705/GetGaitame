@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    android:id="@+id/parentLinearLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="65dp"
     android:layout_weight="0.2"
-    android:id="@+id/parentLinearLayout"
-    android:background="@drawable/ic_launcher_background"
     >
     <LinearLayout
         android:orientation="vertical"
@@ -39,45 +38,55 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="0.3">
-            <ImageView
-                android:id="@+id/yajirusi_view"
+
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:text=" Bid"
+                android:id="@+id/bid_moji"
+                android:textSize="18dp"
+                android:layout_weight="0.25"
+                android:gravity="top"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="NewT1"
+                android:id="@+id/bid"
+                android:textSize="30dp"
+                android:layout_weight="0.7"
+                android:gravity="right"/>
+
+            <ImageView
+                android:id="@+id/bit_yajirusi_view"
+                android:layout_width="20dp"
+                android:layout_height="35dp"
+                android:layout_weight="0.2"
+                android:gravity="top"
+                android:scaleType="fitStart" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text=" Ask"
+                android:id="@+id/ask_moji"
+                android:textSize="18dp"
+                android:layout_weight="0.25"
+                android:gravity="top|center"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="NewT2"
+                android:id="@+id/ask"
+                android:textSize="30dp"
+                android:layout_weight="0.7"
+                android:gravity="right"/>
+            <ImageView
+                android:id="@+id/ask_yajirusi_view"
+                android:layout_width="20dp"
+                android:layout_height="35dp"
                 android:layout_weight="0.2"
                 android:scaleType="fitStart"
-                android:gravity="right"/>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text=" Bid "
-                android:id="@+id/bid_moji"
-                android:textSize="20dp"
-                android:layout_weight="0.25"
-                android:gravity="top"/>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="NewText1"
-                android:id="@+id/bid"
-                android:textSize="33dp"
-                android:layout_weight="0.8"
-                android:gravity="top"/>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="Ask "
-                android:id="@+id/ask_moji"
-                android:textSize="20dp"
-                android:layout_weight="0.25"
-                android:gravity="top"/>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="NewText2"
-                android:id="@+id/ask"
-                android:textSize="33dp"
-                android:layout_weight="0.8"
-                android:gravity="top"/>
+                android:gravity="left"/>
         </LinearLayout>
         <LinearLayout
             android:orientation="horizontal"
@@ -90,16 +99,24 @@
                 android:text=" open "
                 android:id="@+id/open_moji"
                 android:textSize="15dp"
-                android:layout_weight="0.3"
-                android:gravity="left"/>
+                android:layout_weight="0.35"
+                android:gravity="right"/>
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="NewText3"
                 android:id="@+id/open"
-                android:textSize="15dp"
-                android:layout_weight="0.7"
-                android:gravity="left"/>
+                android:textSize="17dp"
+                android:layout_weight="0.4"
+                android:gravity="right"/>
+            <ImageView
+                android:id="@+id/open_yajirusi_view"
+                android:layout_width="9dp"
+                android:layout_height="18dp"
+                android:layout_weight="0.1"
+                android:gravity="left"
+                android:scaleType="fitStart" />
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -107,15 +124,23 @@
                 android:id="@+id/high_moji"
                 android:textSize="15dp"
                 android:layout_weight="0.3"
-                android:gravity="left"/>
+                android:gravity="right"/>
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="NewText4"
                 android:id="@+id/high"
-                android:textSize="15dp"
-                android:layout_weight="0.7"
-                android:gravity="left"/>
+                android:textSize="17dp"
+                android:layout_weight="0.4"
+                android:gravity="right"/>
+            <ImageView
+                android:id="@+id/high_yajirusi_view"
+                android:layout_width="9dp"
+                android:layout_height="18dp"
+                android:layout_weight="0.1"
+                android:gravity="left"
+                android:scaleType="fitStart" />
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -129,9 +154,16 @@
                 android:layout_height="match_parent"
                 android:text="NewText5"
                 android:id="@+id/low"
-                android:textSize="15dp"
-                android:layout_weight="0.7"
-                android:gravity="left"/>
+                android:textSize="17dp"
+                android:layout_weight="0.4"
+                android:gravity="right"/>
+            <ImageView
+                android:id="@+id/low_yajirusi_view"
+                android:layout_width="9dp"
+                android:layout_height="18dp"
+                android:layout_weight="0.1"
+                android:gravity="left"
+                android:scaleType="fitStart" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
