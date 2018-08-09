@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
+import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChild2;
 import android.support.v4.view.ScrollingView;
 import android.support.v7.widget.RecyclerView;
@@ -18,11 +19,10 @@ import android.view.ViewGroup;
  * Created by am on 2018/08/02.
  */
 
-public class MyRecyclerView extends RecyclerView  implements ScrollingView, NestedScrollingChild2 {
+public class MyRecyclerView extends RecyclerView{
     public MyRecyclerView(Context context) {
         this(context, null);
     }
-
     public MyRecyclerView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }

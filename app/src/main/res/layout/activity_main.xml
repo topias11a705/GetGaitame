@@ -26,16 +26,16 @@
                 app:layout_collapseMode="pin"
                 android:background="@color/colorPrimary">
 
-
-
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
+        <com.websarva.wings.android.getgaitame.MyRecyclerView
+            android:id="@+id/lvCityList"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:nestedScrollingEnabled="false"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/lvCityList"
-        android:scrollbars="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
 </android.support.design.widget.CoordinatorLayout>

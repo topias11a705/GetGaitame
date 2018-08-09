@@ -12,6 +12,7 @@ import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
+    DiffUtil.DiffResult diffResult;
     static boolean menu_flag = true;
     static boolean recycleHelper_flag = true;
     static boolean excute_flag = true;
@@ -116,12 +118,12 @@ public class MainActivity extends AppCompatActivity {
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
         ImageView currency_image_view, bit_yajirusi_view, ask_yajirusi_view, open_yajirusi_view, high_yajirusi_view, low_yajirusi_view;
-        ConstraintLayout parentLinearLayout; RecyclerView recyclerView_;
+        LinearLayout parentLinearLayout; RecyclerView recyclerView_;
 
         public RecyclerListViewHolder(View itemView) {
             super(itemView);
             recyclerView_ = itemView.findViewById(R.id.lvCityList);
-            parentLinearLayout = itemView.findViewById(R.id.parentConstraintLayout);
+            parentLinearLayout = itemView.findViewById(R.id.parentLinearLayout);
             currencyPairCodetextView_textView = (TextView)itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView)itemView.findViewById(R.id.bid);
             ask_textView = (TextView)itemView.findViewById(R.id.ask);
@@ -136,18 +138,19 @@ public class MainActivity extends AppCompatActivity {
     }
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
         ArrayList<gaitameDataBox> _listData;
+
         public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
             _listData = listData;
         }
         @Override
         public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-            return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list2, parent, false));
+            return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
         }
         @Override
-        public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
+        public void onBindViewHolder(RecyclerListViewHolder holder, int i){
             gaitameDataBox item = _listData.get(i);
-            if (_listData != null && _listData.size() > i && item != null) {
+            if(_listData != null && _listData.size() > i && item != null){
                 holder.parentLinearLayout.setBackgroundColor(item.getBackGroundColor());
                 holder.open_textView.setTextColor(Color.RED);
                 holder.currencyPairCodetextView_textView.setText(item.getCurrencyPairCode());
@@ -168,6 +171,11 @@ public class MainActivity extends AppCompatActivity {
         public int getItemCount() {
             if(_listData != null){return _listData.size();}
             else{return 0;}
+        }
+
+        public void updateList(ArrayList<gaitameDataBox> newList) {
+            diffResult = DiffUtil.calculateDiff(new MyDiffUtilCallback(this._listData, newList));
+            diffResult.dispatchUpdatesTo(adapter);
         }
     }
     //*******************************************************************************************
@@ -222,8 +230,10 @@ public class MainActivity extends AppCompatActivity {
                             if     (oldHigh!=newHigh){newdata.setHighTextColor(Color.RED);}else{newdata.setHighTextColor(-1979711488);}
                             if     (oldLow != newLow){ newdata.setLowTextColor(Color.RED);}else{ newdata.setLowTextColor(-1979711488);}
                             if(oldBit==newBit && oldAsk==newAsk && oldOpen==newOpen && oldHigh==newHigh && oldLow==newLow){ newdata.setAllReset(); }
-                        }
+                         }
                     }
+                    if(adapter == null){adapter = new RecyclerListAdapter(listData);}else{adapter._listData = listData;}
+
                 }catch(Exception ex) {
                     ex.printStackTrace();
                 }finally {
@@ -240,19 +250,18 @@ public class MainActivity extends AppCompatActivity {
                     if(switchButton != null){
                         switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                excute_flag = isChecked;
-                                if (isChecked) {
-                                    Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
-                                    for(gaitameDataBox data : listData){ data.setAllReset(); }
-                                }
+                            excute_flag = isChecked;
+                            if (isChecked) {
+                                Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+                                for(gaitameDataBox data : listData){ data.setAllReset(); }
+                            }
                             }
                         });
                     }
                     recycleHelper_flag = false;
                 }
-                if(adapter == null){adapter = new RecyclerListAdapter(listData);}else{adapter._listData = listData;}
                 recycleview.setAdapter(adapter);
                 adapter.notifyDataSetChanged();
                 mLinearLayoutManager.scrollToPositionWithOffset(position, y);
@@ -281,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
                         config_mode_hozon_flag =false;
                     }
                     switchButton.setEnabled(false);
-
+                    /*
                     mIth = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
                         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                             final int fromPos = viewHolder.getAdapterPosition();
@@ -313,6 +322,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     mIth.attachToRecyclerView(recycleview);
+                    */
                 }else{//設定モード中なら元に戻す
                     config_mode_flag = false;//設定モードをOFFにする。
                     //***Listener消せない****
