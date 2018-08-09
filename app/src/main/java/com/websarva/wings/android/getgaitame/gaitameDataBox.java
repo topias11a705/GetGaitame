@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
 public class gaitameDataBox implements Cloneable {
-    private  String currencyPairCode,open,high,low,bid,ask; private int backGroundColor = Color.WHITE;
+    private  String currencyPairCode,open,high,low,bid,ask; private int backGroundColor,openTextColor,highTextColor,lowTextColor;
     private Drawable flag_image, bit_yajirushi_image,ask_yajirushi_image,open_yajirushi_image,high_yajirushi_image,low_yajirushi_image;
     public gaitameDataBox(){
         super();
@@ -40,19 +40,23 @@ public class gaitameDataBox implements Cloneable {
     synchronized public void setBit_yajirushi_image(Drawable bit_yajirushi_image){this.bit_yajirushi_image = bit_yajirushi_image;}
     synchronized public Drawable getAsk_yajirushi_image() {return ask_yajirushi_image;}
     synchronized public void setAsk_yajirushi_image(Drawable  ask_yajirushi_image){this.ask_yajirushi_image = ask_yajirushi_image;}
-    synchronized public Drawable getOpen_yajirushi_image() {return open_yajirushi_image;}
-    synchronized public void setOpen_yajirushi_image(Drawable  open_yajirushi_image){this.open_yajirushi_image = open_yajirushi_image;}
-    synchronized public Drawable getHigh_yajirushi_image() {return high_yajirushi_image;}
-    synchronized public void setHigh_yajirushi_image(Drawable  high_yajirushi_image){this.high_yajirushi_image = high_yajirushi_image;}
-    synchronized public Drawable getLow_yajirushi_image() {return low_yajirushi_image;}
-    synchronized public void setLow_yajirushi_image(Drawable  low_yajirushi_image){this.low_yajirushi_image = low_yajirushi_image;}
-    synchronized public void set_yajirushi_image_is_AllNull(){
+    synchronized public void setAllReset(){
+        this.backGroundColor = Color.WHITE;
         this.bit_yajirushi_image = null;
         this.ask_yajirushi_image = null;
         this.open_yajirushi_image = null;
         this.high_yajirushi_image = null;
         this.low_yajirushi_image = null;
+        this.openTextColor = -1979711488;
+        this.highTextColor = -1979711488;
+        this.lowTextColor  = -1979711488;
     }
-    synchronized public int getBackGroundColor() {return backGroundColor;}
+    synchronized public int getBackGroundColor() {return this.backGroundColor;}
     synchronized public void setBackGroundColor(int backGroundColor){this.backGroundColor = backGroundColor;}
+    synchronized public int getOpenTextColor() {return this.openTextColor;}
+    synchronized public void setOpenTextColor(int openTextColor){this.openTextColor = openTextColor;}
+    synchronized public int getHighTextColor() {return this.highTextColor;}
+    synchronized public void setHighTextColor(int highTextColor){this.highTextColor = highTextColor;}
+    synchronized public int getLowTextColor() {return this.lowTextColor;}
+    synchronized public void setLowTextColor(int lowTextColor){this.lowTextColor = lowTextColor;}
 }

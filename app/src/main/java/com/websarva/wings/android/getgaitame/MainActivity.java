@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.view.WindowCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -115,12 +116,12 @@ public class MainActivity extends AppCompatActivity {
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
         ImageView currency_image_view, bit_yajirusi_view, ask_yajirusi_view, open_yajirusi_view, high_yajirusi_view, low_yajirusi_view;
-        LinearLayout parentLinearLayout; RecyclerView recyclerView_;
+        ConstraintLayout parentLinearLayout; RecyclerView recyclerView_;
 
         public RecyclerListViewHolder(View itemView) {
             super(itemView);
             recyclerView_ = itemView.findViewById(R.id.lvCityList);
-            parentLinearLayout = itemView.findViewById(R.id.parentLinearLayout);
+            parentLinearLayout = itemView.findViewById(R.id.parentConstraintLayout);
             currencyPairCodetextView_textView = (TextView)itemView.findViewById(R.id.currencyPairCode);
             bid_textView = (TextView)itemView.findViewById(R.id.bid);
             ask_textView = (TextView)itemView.findViewById(R.id.ask);
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-            return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list, parent, false));
+            return new RecyclerListViewHolder(inflater.inflate(R.layout.gaitame_list2, parent, false));
         }
         @Override
         public void onBindViewHolder(RecyclerListViewHolder holder, int i) {
@@ -326,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
                     }else{
                         switchButton.setChecked(false);
                     }
-
                 }
                 break;
             /*

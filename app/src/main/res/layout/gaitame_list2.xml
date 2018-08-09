@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    android:id="@+id/parentConstraintLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="65dp">
+    <TextView
+        android:id="@+id/currencyPairCode"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:text="ABCEFG"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/currency_image_view"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_below="@+id/currencyPairCode"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currencyPairCode" />
+
+
+    <TextView
+        android:id="@+id/bid_moji"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Bid"
+        android:textSize="18dp"
+        app:layout_constraintStart_toEndOf="@+id/currencyPairCode"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/bid"
+        android:layout_width="0dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="5dp"
+        android:text="NT1"
+        android:textSize="35dp"
+        app:layout_constraintStart_toEndOf="@+id/bid_moji"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/bit_yajirusi_view"
+        android:layout_width="20dp"
+        android:layout_height="35dp"
+        android:scaleType="fitStart"
+        app:layout_constraintStart_toEndOf="@+id/bid"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/ask_moji"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Ask"
+        android:textSize="18dp"
+        app:layout_constraintEnd_toStartOf="@+id/ask"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/ask"
+        android:layout_width="0dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:text="NT2"
+        android:textSize="35dp"
+        app:layout_constraintEnd_toStartOf="@+id/ask_yajirusi_view"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ask_yajirusi_view"
+        android:layout_width="20dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="8dp"
+        android:scaleType="fitStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/OpenHighLowLinearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintStart_toEndOf="@+id/currencyPairCode">
+
+        <TextView
+            android:id="@+id/open_moji"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.35"
+            android:gravity="right"
+            android:text=" open  "
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/open"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.4"
+            android:gravity="left"
+            android:text="NewText3"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/high_moji"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="right"
+            android:text=" high  "
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/high"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.4"
+            android:gravity="left"
+            android:text="NewText4"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/low_moji"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="right"
+            android:text=" low  "
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/low"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.4"
+            android:gravity="top|left"
+            android:text="NewText5"
+            android:textSize="17dp" />
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

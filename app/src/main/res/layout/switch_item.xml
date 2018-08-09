@@ -1,11 +1,10 @@
-<RelativeLayout
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.SwitchCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/onnOff_menubar_switch"
+    android:text="ON/OFF"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
-</RelativeLayout>
+    android:layout_height="match_parent"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    android:checked="true"/>
