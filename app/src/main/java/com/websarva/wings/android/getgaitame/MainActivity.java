@@ -118,11 +118,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        /*
         AdView mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-*/
+        mAdView.loadAd( new AdRequest.Builder().build() );
         try{mTimer.schedule(mTimerTask, 0, 1000);}catch(Exception e){System.out.print(e);}
     }
     @Override
@@ -210,6 +207,10 @@ public class MainActivity extends AppCompatActivity {
         public int getItemCount() {
             if(_listData != null){return _listData.size();}
             else{return 0;}
+        }
+        @Override
+        public int getItemViewType(int position) {
+            return position;
         }
     }
     //*******************************************************************************************
