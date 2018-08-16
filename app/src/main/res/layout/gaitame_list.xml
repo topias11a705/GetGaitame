@@ -2,21 +2,17 @@
 <LinearLayout
     android:id="@+id/parentLinearLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="65dp"
-    >
+    android:layout_height="65dp">
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1.1">
+        android:layout_width="55dp"
+        android:layout_height="wrap_content">
         <TextView
             android:id="@+id/currencyPairCode"
             android:layout_width="105dp"
             android:layout_height="match_parent"
-            android:text="NewText1"
+            android:text="@string/app_name"
             android:textSize="12dp"
             android:gravity="left"/>
         <ImageView
@@ -25,20 +21,16 @@
             android:layout_height="match_parent"
             android:scaleType="fitStart"
             android:gravity="left"/>
-
     </LinearLayout>
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="0.9">
+        android:layout_height="match_parent">
         <LinearLayout
             android:id="@+id/BidAskLinearLayout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3">
-
+            android:layout_height="45dp">
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -50,7 +42,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="NewT1"
+                android:text="@string/app_name"
                 android:id="@+id/bid"
                 android:textSize="30dp"
                 android:layout_weight="0.7"
@@ -75,7 +67,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="NewT2"
+                android:text="@string/app_name"
                 android:id="@+id/ask"
                 android:textSize="30dp"
                 android:layout_weight="0.7"
@@ -92,12 +84,11 @@
             android:id="@+id/OpenHighLowLinearLayout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="0.7">
+            android:layout_height="match_parent">
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text=" open  "
+                android:text="open  "
                 android:id="@+id/open_moji"
                 android:textSize="15dp"
                 android:layout_weight="0.35"
@@ -105,7 +96,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="NewText3"
+                android:text="@string/app_name"
                 android:id="@+id/open"
                 android:textSize="17dp"
                 android:layout_weight="0.4"
@@ -122,7 +113,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="NewText4"
+                android:text="@string/app_name"
                 android:id="@+id/high"
                 android:textSize="17dp"
                 android:layout_weight="0.4"
@@ -139,12 +130,11 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="NewText5"
+                android:text="@string/app_name"
                 android:id="@+id/low"
                 android:textSize="17dp"
                 android:layout_weight="0.4"
                 android:gravity="top|left"/>
-
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

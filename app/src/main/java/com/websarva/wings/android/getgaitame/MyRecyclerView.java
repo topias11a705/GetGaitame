@@ -20,20 +20,12 @@ import android.view.ViewGroup;
  */
 
 public class MyRecyclerView extends RecyclerView{
-    public MyRecyclerView(Context context) {
-        this(context, null);
-    }
-    public MyRecyclerView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-    public MyRecyclerView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
+    public MyRecyclerView(Context context) {this(context, null);}
+    public MyRecyclerView(Context context, @Nullable AttributeSet attrs) {super(context, attrs, 0);}
+/*
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("TouchEventLitenew", "X:" + event.getX() + ",Y:" + event.getY()+ "getDownTime:" + event.getDownTime()+ ", ,getEdgeFlags" +
-                event.getEdgeFlags()+", ,getSize" + event.getSize()+ ", ,getEventTime" +event.getEventTime()+ ", ,getPressure" +event.getPressure());
+
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_DOWN");
@@ -43,19 +35,8 @@ public class MyRecyclerView extends RecyclerView{
                 Log.d("MOTIONLitener", "onTouchEvent ACTION_UP");
 
                 return true;//break;
-            /*
-            case MotionEvent.ACTION_MOVE:
-                Log.d("MOTIONLitener", "onTouchEvent ACTION_MOVE2");
-                return false;//break;
-            case MotionEvent.ACTION_CANCEL:
-                Log.d("MOTIONLitener", "onTouchEvent ACTION_CANCEL");
-                return false;//break;
-            case MotionEvent.ACTION_OUTSIDE:
-                Log.d("MOTIONLitener", "onTouchEvent ACTION_OUTSIDE");
-                return true;//break;
-            */
         }
         return false;
     }
-
+*/
 }

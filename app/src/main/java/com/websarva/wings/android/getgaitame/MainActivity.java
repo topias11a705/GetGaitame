@@ -100,7 +100,34 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("MOTIONLitener", "onRequestDisallowInterceptTouchEvent");}
         });
 
+        recycleview.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) recycleview.getLayoutManager()) {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState){
+                super.onScrollStateChanged(recyclerView,newState);
+                //Log.i("EndlessScrollListener","EndlessScrollListener onScrollStateChanged "+ String.valueOf(newState));
+                if (newState==1){//スクロールはじめ
+                    excute_flag = false;
+                }else if (newState==0){//スクロール終わり
+                    excute_flag = true;
+                }
+            }
+        });
+
         try{mTimer.schedule(mTimerTask, 0, 1500);}catch(Exception e){System.out.print(e);}
+    }
+    @Override
+    protected void onResume() {
+        if(switchButton != null){
+            switchButton.setChecked(true);
+        }
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        if(switchButton != null){
+            switchButton.setChecked(false);
+        }
+        super.onPause();
     }
     public class MainTimerTask extends TimerTask { //➀
         @Override
@@ -114,10 +141,12 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
     //*******************************************************************************************
+
     private class RecyclerListViewHolder extends RecyclerView.ViewHolder {
         TextView currencyPairCodetextView_textView, bid_textView, ask_textView, open_textView, high_textView, low_textView;
-        ImageView currency_image_view, bit_yajirusi_view, ask_yajirusi_view, open_yajirusi_view, high_yajirusi_view, low_yajirusi_view;
+        ImageView currency_image_view, bit_yajirusi_view, ask_yajirusi_view;
         LinearLayout parentLinearLayout; RecyclerView recyclerView_;
 
         public RecyclerListViewHolder(View itemView) {
@@ -408,7 +437,6 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 /*
-TODO: アプリがResumeしたときに為替取得を止める
 TODO:順番を任意で入れ替えられるようにする
 TODO:タップしたときの処理
 TODO:サービスを使ってバックグラウンドで為替の通知表示
@@ -416,6 +444,7 @@ TODO:編集タブで表示数や表示順を設定保存できるようにする
 TODO:データベースを使用しユーザー登録できるようにする
 TODO データ更新時には変更部分だけを更新するようにして動作を早くさせる
 TODO getRecycledViewPoolが再利用の仕組みを提供している可能性があるので使用検討する　
+todo 設定できることを増やす　背景色/
 https://developer.android.com/reference/android/support/v7/widget/RecyclerView.RecycledViewPool
 
 */
