@@ -34,6 +34,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -115,7 +118,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+        /*
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+*/
         try{mTimer.schedule(mTimerTask, 0, 1000);}catch(Exception e){System.out.print(e);}
     }
     @Override

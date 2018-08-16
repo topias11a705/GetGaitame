@@ -13,7 +13,8 @@ public class gaitameDataBox implements Cloneable {
         super();
         setCurrencyPairCode(currencyPairCode);setOpen(open);setHigh(high);setLow(low);setBid(bid);setAsk(ask);
     }
-    @Override public gaitameDataBox clone() { //基本的にはpublic修飾子を付け、自分自身の型を返り値とする
+    @Override
+    public gaitameDataBox clone() { //基本的にはpublic修飾子を付け、自分自身の型を返り値とする
         gaitameDataBox b=null;
         try {
             b=(gaitameDataBox)super.clone(); //親クラスのcloneメソッドを呼び出す(親クラスの型で返ってくるので、自分自身の型でのキャストを忘れないようにする)
