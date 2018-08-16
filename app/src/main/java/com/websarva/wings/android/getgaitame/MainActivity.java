@@ -48,7 +48,11 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
+/**
+ * Author SHINNOSUKE KONO
+ GitHub
+ https://github.com/topias11a705/GetGaitame
+ */
 public class MainActivity extends AppCompatActivity {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
@@ -99,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
                 Log.d("MOTIONLitener", "onRequestDisallowInterceptTouchEvent");}
         });
-
         recycleview.addOnScrollListener(new EndlessScrollListener((LinearLayoutManager) recycleview.getLayoutManager()) {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState){
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        try{mTimer.schedule(mTimerTask, 0, 1500);}catch(Exception e){System.out.print(e);}
+        try{mTimer.schedule(mTimerTask, 0, 1000);}catch(Exception e){System.out.print(e);}
     }
     @Override
     protected void onResume() {
@@ -201,11 +204,6 @@ public class MainActivity extends AppCompatActivity {
             if(_listData != null){return _listData.size();}
             else{return 0;}
         }
-
-        public void updateList(ArrayList<gaitameDataBox> newList) {
-            diffResult = DiffUtil.calculateDiff(new MyDiffUtilCallback(this._listData, newList));
-            diffResult.dispatchUpdatesTo(adapter);
-        }
     }
     //*******************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
@@ -239,6 +237,19 @@ public class MainActivity extends AppCompatActivity {
                         listData = null;
                     }
                     listData = jsonToListData(result);
+
+                    //並べ替え
+                    ArrayList<gaitameDataBox> a = listData;
+                    for (int i = 0; i < listData.size(); i++){
+                        listData.set(i,a.get(i/*←a.get(i)のiの値を任意の値に変更する*/));
+                    }
+                    listData.set(0,a.get(20));
+                    listData.set(1,a.get(16));
+                    listData.set(2,a.get(23));
+                    listData.set(23,a.get(2));
+                    listData.set(16,a.get(1));
+                    listData.set(20,a.get(0));
+
                     for (int i = 0; i < listData.size(); i++) {
                         if (!ArraysCopied.isEmpty()){
                             //Log .d("JSONObject", String.valueOf(ArraysCopied.get(i).getBid().equals(listData.get(i).getBid())));
@@ -279,13 +290,13 @@ public class MainActivity extends AppCompatActivity {
                     if(switchButton != null){
                         switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            excute_flag = isChecked;
-                            if (isChecked) {
-                                Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
-                                for(gaitameDataBox data : listData){ data.setAllReset(); }
-                            }
+                                excute_flag = isChecked;
+                                if (isChecked) {
+                                    Toast.makeText(contex1, "自動更新開始", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(contex1, "自動更新停止", Toast.LENGTH_SHORT).show();
+                                    for(gaitameDataBox data : listData){ data.setAllReset(); }
+                                }
                             }
                         });
                     }
@@ -382,12 +393,10 @@ public class MainActivity extends AppCompatActivity {
         for(int i=0;i<24;i++) {
             //Log .d("JSONObject", rootJSON.getJSONArray("quotes").getJSONObject(i).toString());
             JSONObject jsn = rootJSON.getJSONArray("quotes").getJSONObject(i);
-            String currencyPairCode = jsn.getString("currencyPairCode");
-            String open = jsn.getString("open");
-            String high = jsn.getString("high");
-            String low = jsn.getString("low");
-            String bid = jsn.getString("bid");
-            String ask = jsn.getString("ask");
+            String currencyPairCode,open,high,low,bid,ask;
+            currencyPairCode=jsn.getString("currencyPairCode");open=jsn.getString("open");
+            high = jsn.getString("high");low = jsn.getString("low");
+            bid  = jsn.getString("bid"); ask = jsn.getString("ask");
             gaitameDataBox gaitame =new gaitameDataBox(currencyPairCode, open, high, low, bid, ask);
             gaitame.setFlag_image(get_image_res(currencyPairCode));
             listdata.add(gaitame);
