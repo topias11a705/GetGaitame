@@ -212,6 +212,8 @@ public class MainActivity extends AppCompatActivity {
         public int getItemViewType(int position) {
             return position;
         }
+        //
+        // https://woshidan.hatenablog.com/entry/2015/11/02/083000
     }
     //*******************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
