@@ -2,6 +2,7 @@ package com.websarva.wings.android.getgaitame;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -94,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
         recycleview.setLayoutManager(mLinearLayoutManager);
         recycleview.addItemDecoration(new DividerItemDecoration(MainActivity.this, mLinearLayoutManager.getOrientation()));
         recycleview.addOnItemTouchListener(new RecyclerItemClickListener(contex2, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override  public void onItemClick(View view, int position) {Log.d("MOTIONLitener", "OnItemClickListener onItemClick");}
-            }));
+            @Override  public void onItemClick(View view, int position) {Log.d("MOTIONLitener", "OnItemClickListener onItemClick");}
+        }));
         recycleview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             @Override public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
                 Log.d("MOTIONLitener", "onInterceptTouchEvent");
@@ -122,19 +123,13 @@ public class MainActivity extends AppCompatActivity {
         mAdView.loadAd( new AdRequest.Builder().build() );
         try{mTimer.schedule(mTimerTask, 0, 1000);}catch(Exception e){System.out.print(e);}
     }
-    @Override
-    protected void onResume() {
-        if(switchButton != null){
-            switchButton.setChecked(true);
-        }
+    @Override protected void onResume() {
         super.onResume();
+        if(switchButton != null){switchButton.setChecked(true);}
     }
-    @Override
-    protected void onPause() {
-        if(switchButton != null){
-            switchButton.setChecked(false);
-        }
+    @Override protected void onPause() {
         super.onPause();
+        if(switchButton != null){switchButton.setChecked(false);}
     }
     public class MainTimerTask extends TimerTask { //➀
         @Override
@@ -175,9 +170,7 @@ public class MainActivity extends AppCompatActivity {
     private class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListViewHolder> {
         ArrayList<gaitameDataBox> _listData;
 
-        public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {
-            _listData = listData;
-        }
+        public RecyclerListAdapter(ArrayList<gaitameDataBox> listData) {_listData = listData;}
         @Override
         public RecyclerListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
@@ -212,8 +205,6 @@ public class MainActivity extends AppCompatActivity {
         public int getItemViewType(int position) {
             return position;
         }
-        //
-        // https://woshidan.hatenablog.com/entry/2015/11/02/083000
     }
     //*******************************************************************************************
     private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
@@ -231,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                     con.setRequestMethod("GET");
                     con.connect();
                     result = is2String(con.getInputStream());
-            //**************************************************************
+                    //**************************************************************
                     ArrayList<gaitameDataBox> ArraysCopied = new ArrayList<gaitameDataBox>(listData.size());
                     if (adapter != null) {
                         position = mLinearLayoutManager.findFirstVisibleItemPosition();
@@ -280,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
                             if     (oldHigh!=newHigh){newdata.setHighTextColor(Color.RED);}else{newdata.setHighTextColor(-1979711488);}
                             if     (oldLow != newLow){ newdata.setLowTextColor(Color.RED);}else{ newdata.setLowTextColor(-1979711488);}
                             if(oldBit==newBit && oldAsk==newAsk && oldOpen==newOpen && oldHigh==newHigh && oldLow==newLow){ newdata.setAllReset(); }
-                         }
+                        }
                     }
                     if(adapter == null){adapter = new RecyclerListAdapter(listData);}else{adapter._listData = listData;}
 
@@ -363,7 +354,6 @@ public class MainActivity extends AppCompatActivity {
                             if (actionState == ItemTouchHelper.ACTION_STATE_DRAG)
                                 viewHolder.itemView.setVisibility(View.VISIBLE);
                             Log.d("ItemTouchHelperLitener", "onSelectedChanged");
-
                         }
                         @Override public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
                             super.clearView(recyclerView, viewHolder);
@@ -389,14 +379,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 break;
-            /*
-            case R.id.onnOff_menubar_switch_item:
+
+            case R.id.intent_activity:
+                mTimer.cancel();
+                Intent intent = new Intent(MainActivity.this,AdGaitameActivity.class);
+                startActivity(intent);
+                finish();
                 break;
-            */
         }
         return super.onOptionsItemSelected(item);
     }
-    private synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
+    public synchronized ArrayList<gaitameDataBox>  jsonToListData(String result) throws JSONException{
         ArrayList<gaitameDataBox> listdata = new ArrayList<>();
         JSONObject rootJSON = new JSONObject(result);
         //Log.d("JSONObject", rootJSON.toString());//Log.d("JSONObject", rootJSON.getJSONArray("quotes").toString());
@@ -414,7 +407,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return listdata;
     }
-    private String is2String(InputStream is) throws IOException {
+    public String is2String(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         StringBuilder sb = new StringBuilder();
         char[] b = new char[1024];
@@ -465,6 +458,4 @@ TODO データ更新時には変更部分だけを更新するようにして動
 TODO getRecycledViewPoolが再利用の仕組みを提供している可能性があるので使用検討する　
 todo 設定できることを増やす　背景色/
 https://developer.android.com/reference/android/support/v7/widget/RecyclerView.RecycledViewPool
-
 */
-
