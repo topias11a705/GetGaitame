@@ -61,18 +61,16 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<gaitameDataBox> listData = new ArrayList<>();
     //CopyOnWriteArrayList<gaitameDataBox> listData_clone = new CopyOnWriteArrayList<>();
     static RecyclerView recycleview= null; ImageView imageView;LinearLayoutManager mLinearLayoutManager;
-    SwitchCompat switchButton ;
-    ItemTouchHelper mIth;
+    SwitchCompat switchButton ;    ItemTouchHelper mIth;
     Timer mTimer = new Timer();
     TimerTask mTimerTask = new MainTimerTask();
     Handler mHandler = new Handler();
-    DiffUtil.DiffResult diffResult;
     static boolean menu_flag = true;
     static boolean recycleHelper_flag = true;
     static boolean excute_flag = true;
     static boolean config_mode_flag = false;
     static boolean config_mode_hozon_flag = false;
-    Context contex1;Context contex2;
+    Context contex1, contex2;
     int position = 0; int y = 0;
     RecyclerListAdapter adapter=null;
 
@@ -380,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            case R.id.intent_activity:
+            case R.id.configMode2:
                 mTimer.cancel();
                 Intent intent = new Intent(MainActivity.this,AdGaitameActivity.class);
                 startActivity(intent);
@@ -457,5 +455,6 @@ TODO:データベースを使用しユーザー登録できるようにする
 TODO データ更新時には変更部分だけを更新するようにして動作を早くさせる
 TODO getRecycledViewPoolが再利用の仕組みを提供している可能性があるので使用検討する　
 todo 設定できることを増やす　背景色/
+todo 取引時間外はデータ取得を止める
 https://developer.android.com/reference/android/support/v7/widget/RecyclerView.RecycledViewPool
 */

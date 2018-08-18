@@ -3,4 +3,5 @@
     <string name="action_favorite">GetGaitame</string>
     <string name="toolbar_title_on">GetGaitame ON</string>
     <string name="toolbar_title_off">GetGaitame OFF</string>
+    <string name="title_activity_ad_gaitame">AdGaitameActivity</string>
 </resources>

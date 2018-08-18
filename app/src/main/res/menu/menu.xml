@@ -11,4 +11,9 @@
         android:icon="@drawable/perm_group_system_tools"
         android:title=""
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/configMode2"
+        android:icon="@drawable/perm_group_system_tools"
+        android:title=""
+        app:showAsAction="ifRoom"/>
 </menu>
